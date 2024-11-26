@@ -12,9 +12,13 @@ def Calcular_envido(mano: list) -> int:
     '''
     puntos = 0
 
-    # Crear una lista de los valores "reducidos" para el envido (10, 11, 12 no suman puntos)
-    valores_envido = [min(carta[0], 7) for carta in mano]  # Valores reducidos según las reglas del envido
+    # Validar formato de las cartas
+    #if not all(isinstance(carta, tuple) and isinstance(carta[0], int) for carta in mano):
+     #   raise ValueError("Las cartas deben estar en el formato (valor, palo)")
 
+    # Crear una lista de los valores "reducidos" para el envido (10, 11, 12 no suman puntos)
+    valores_envido = [min(carta[0], 7) for carta in mano]  # Reducimos valores mayores a 7
+    
     # Comparar pares de cartas para encontrar el mejor envido
     for i in range(len(mano)):
         for j in range(i + 1, len(mano)):
@@ -45,7 +49,7 @@ def decidir_canto_maquina(mano: list, tipo: str) -> str:
     '''
     if tipo == "envido":
         puntos_envido = Calcular_envido(mano)
-        if puntos_envido > 25:  
+        if puntos_envido > 21:  
             return "s"
         return "n"
     elif tipo == "truco":

@@ -138,52 +138,62 @@ def jugar_mano(mano_jugador: list, mano_maquina: list, valores_truco: dict) -> s
     else:
         return "empate"  # En caso de empate en rondas
 
-def manejar_envido(puntos_jugador: int, puntos_maquina: int, mano_jugador: list, mano_maquina: list) -> tuple:
+def manejar_truco(puntos_jugador: int, puntos_maquina: int) -> tuple:
     '''
-    Maneja el flujo del canto de envido y determina al ganador.
+    Maneja el flujo del canto del truco y determina al ganador.
 
     Parámetros:
         puntos_jugador (int): Puntaje actual del jugador.
         puntos_maquina (int): Puntaje actual de la máquina.
-        mano_jugador (list): Cartas del jugador.
-        mano_maquina (list): Cartas de la máquina.
+
+    Retorno:
+        tuple: (puntos_jugador, puntos_maquina), puntajes actualizados después del truco.
+    '''
+    print("La máquina canta Truco. ¿Aceptás? (s/n)")
+    respuesta = input().strip().lower()
+
+    if respuesta == "n":
+        print("No aceptaste el Truco. La máquina gana 1 punto.")
+        puntos_maquina += 1
+        return puntos_jugador, puntos_maquina
+
+    # Simulación de la lógica del truco: el jugador siempre gana
+    print("¡Aceptaste el Truco!")
+    print("La máquina juega su estrategia y el jugador gana.")
+    puntos_jugador += 2
+
+    return puntos_jugador, puntos_maquina
+
+def manejar_envido(puntos_jugador: int, puntos_maquina: int, mano_jugador: list, mano_maquina: list) -> tuple:
+    '''
+    Maneja el flujo del canto de envido y determina al ganador.
 
     Retorno:
         tuple: (puntos_jugador, puntos_maquina), puntajes actualizados después del envido.
     '''
-    # Preguntar al jugador si canta envido
     print("¿Querés cantar envido? (s/n)")
     respuesta = input().strip().lower()
 
-    # Si el jugador no canta envido, no pasa nada
     if respuesta != "s":
         return puntos_jugador, puntos_maquina
 
-    # Si el jugador canta envido, la máquina decide si acepta
     envido_jugador = Calcular_envido(mano_jugador)
     envido_maquina = Calcular_envido(mano_maquina)
 
     print("La máquina canta envido. ¿Querés aceptar? (s/n)")
-    respuesta_maquina = "s" if envido_maquina > 20 else "n"  # Estrategia simple para la máquina
+    respuesta_maquina = "s" if envido_maquina > 20 else "n"
 
     if respuesta_maquina == "n":
-        print("La máquina no quiso el envido.")
-        puntos_jugador += 1  # No aceptar el envido otorga 1 punto
+        puntos_jugador += calcular_puntos_envido("envido no querido")
         return puntos_jugador, puntos_maquina
 
-    # Comparar puntos de envido
-    print(f"Tus puntos de envido: {envido_jugador}")
-    print(f"Puntos de envido de la máquina: {envido_maquina}")
-
+    print(f"Tus puntos: {envido_jugador}, Máquina: {envido_maquina}")
     if envido_jugador > envido_maquina:
-        puntos_jugador += 2
-        print("¡Ganaste el envido!")
+        puntos_jugador += calcular_puntos_envido("envido ganado")
     elif envido_jugador < envido_maquina:
-        puntos_maquina += 2
-        print("La máquina ganó el envido.")
+        puntos_maquina += calcular_puntos_envido("envido ganado")
     else:
-        print("Empate en el envido. No se suman puntos.")
-
+        print("Empate en envido.")
     return puntos_jugador, puntos_maquina
 
 

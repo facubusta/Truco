@@ -41,36 +41,38 @@ while jugando:
     # Rellenar el fondo de la pantalla
     pantalla.fill((255, 255, 255))
 
-    # Mostrar puntajes en la pantalla
-    mostrar_puntajes(pantalla, puntos_jugador, puntos_maquina)
-
-    # Mostrar las cartas del jugador y permitir selección
+    # Mostrar las cartas del jugador
     carta_seleccionada = mostrar_cartas(pantalla, mano_jugador, imagenes_cartas, 400, es_jugador=True)
 
-    # Mostrar las cartas de la máquina boca abajo
+    # Mostrar las cartas de la máquina
     mostrar_cartas(pantalla, mano_maquina, imagenes_cartas, 100, es_jugador=False)
 
-    # Preguntar si se canta envido (al inicio de la mano)
-    if not cartas_jugadas:  # Solo preguntar al inicio de la ronda
+    # Dibujar los botones
+    boton_truco.dibujar(pantalla)
+    boton_envido.dibujar(pantalla)
+
+    # Detectar clic en los botones
+    if boton_truco.detectar_clic():
+        print("Botón Truco presionado")
+        puntos_jugador, puntos_maquina = manejar_truco(puntos_jugador, puntos_maquina)  # Lógica del truco
+    
+    if boton_envido.detectar_clic():
+        print("Botón Envido presionado")
         puntos_jugador, puntos_maquina = manejar_envido(puntos_jugador, puntos_maquina, mano_jugador, mano_maquina)
 
-    # Si el jugador selecciona una carta
+   # Si el jugador selecciona una carta
     if carta_seleccionada:
-        # La máquina juega automáticamente la primera carta de su mano
-        carta_maquina = mano_maquina.pop(0)
-        mano_jugador.remove(carta_seleccionada)
-
-        # Determinar el ganador de la ronda
-        if valores_truco[carta_seleccionada] > valores_truco[carta_maquina]:
-            ganador = "jugador"
+        if mano_maquina:  # Verificar que la máquina aún tenga cartas
+            carta_maquina = mano_maquina.pop(0)  # La máquina juega la primera carta de su mano
+            mano_jugador.remove(carta_seleccionada)
+            print(f"Jugador jugó: {carta_seleccionada}, Máquina jugó: {carta_maquina}")
         else:
-            ganador = "maquina"
+            print("No quedan cartas en la mano de la máquina.")
 
-        # Actualizar los puntos del truco
-        puntos_jugador, puntos_maquina = actualizar_puntajes(puntos_jugador, puntos_maquina, ganador, tipo="truco")
-
-        print(f"Jugador jugó: {carta_seleccionada}, Máquina jugó: {carta_maquina}")
-        print(f"Ganador de la ronda: {ganador}")
+    # Si no quedan cartas en ninguna mano, finalizar la partida
+    if not mano_jugador and not mano_maquina:
+        print("¡Fin de la partida!")
+        jugando = False
 
     # Actualizar la pantalla
     pygame.display.flip()

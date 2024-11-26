@@ -39,24 +39,6 @@ def calcular_puntos_envido(tipo_envido: str, puntos_jugador: int = 0, maquina_pu
     
     return 0 
 
-def actualizar_puntajes(puntos_jugador: int, puntos_maquina: int, resultado_ronda: dict) -> tuple:
-    '''
-    Actualiza los puntajes del jugador y la máquina en base al resultado de una ronda.
-    '''
-    puntos_jugador += resultado_ronda.get('jugador', 0)
-    puntos_maquina += resultado_ronda.get('maquina', 0)
-    return puntos_jugador, puntos_maquina
-
-def mostrar_puntajes(pantalla: pygame.Surface, puntos_jugador: int, puntos_maquina: int) -> None:
-    '''
-    Muestra los puntajes del jugador y de la máquina en la pantalla.
-    '''
-    fuente = pygame.font.Font(None, 36)
-    texto_jugador = fuente.render(f"Puntaje Jugador: {puntos_jugador}", True, (0, 0, 0))
-    texto_maquina = fuente.render(f"Puntaje Máquina: {puntos_maquina}", True, (0, 0, 0))
-    pantalla.blit(texto_jugador, (50, 50))
-    pantalla.blit(texto_maquina, (50, 100))
-
 def mostrar_puntajes(pantalla: pygame.Surface, puntos_jugador: int, puntos_maquina: int) -> None:
     '''
     Muestra los puntajes del jugador y la máquina en la pantalla.
@@ -69,23 +51,15 @@ def mostrar_puntajes(pantalla: pygame.Surface, puntos_jugador: int, puntos_maqui
 
 def actualizar_puntajes(puntos_jugador: int, puntos_maquina: int, ganador: str, tipo: str) -> tuple:
     '''
-    Actualiza los puntajes después de cada ronda.
-
-    Parámetros:
-        puntos_jugador (int): Puntaje actual del jugador.
-        puntos_maquina (int): Puntaje actual de la máquina.
-        ganador (str): "jugador" o "maquina", el ganador de la ronda.
-        tipo (str): Tipo de jugada, "envido" o "truco".
-
-    Retorno:
-        tuple: (puntos_jugador, puntos_maquina) con los puntajes actualizados.
+    Actualiza los puntajes después de cada ronda
     '''
-    if tipo == "envido":
-        puntos_a_sumar = 2  # Por ahora, asumimos que se gana un envido simple
-    elif tipo == "truco":
-        puntos_a_sumar = 1  # Un truco simple vale 1 punto
-    else:
-        puntos_a_sumar = 0
+    puntos_a_sumar = {
+        "truco": 1,
+        "retruco": 3,
+        "vale cuatro": 4,
+        "envido": 2,
+        "envido no querido": 1
+                         }.get(tipo, 0)
 
     if ganador == "jugador":
         puntos_jugador += puntos_a_sumar
