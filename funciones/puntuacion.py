@@ -67,3 +67,27 @@ def actualizar_puntajes(puntos_jugador: int, puntos_maquina: int, ganador: str, 
         puntos_maquina += puntos_a_sumar
 
     return puntos_jugador, puntos_maquina
+
+def mostrar_mensaje(pantalla: pygame.surface, mensaje: str, x: int, y: int):
+    fuente = pygame.font.Font(None, 48)
+    texto = fuente.render(mensaje, True, (0, 0, 0))  # Texto negro
+    rect = texto.get_rect(center=(x, y))
+    pygame.draw.rect(pantalla, (255, 255, 255), rect.inflate(20, 20))  # Fondo blanco para el mensaje
+    pantalla.blit(texto, rect)
+
+
+'''# Función para calcular puntos de Envido
+def calcular_envido(cartas):
+    por_palo = {}
+    figuras = {'11', '12', '10'}
+    for valor, palo in cartas:
+        if valor in figuras:
+            puntos = 0
+        else:
+            puntos = int(valor) if valor.isdigit() else 0
+        por_palo[palo] = por_palo.get(palo, []) + [puntos]
+    
+    max_envido = 0
+    for palo, puntos in por_palo.items():
+        if len(puntos) > 1:
+            max_envido = max(max_envido, sum(sorted(puntos, reverse=Tru'''

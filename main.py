@@ -12,15 +12,21 @@ ancho = 800
 alto = 600
 pantalla = pygame.display.set_mode((ancho, alto))
 
+# Cargar la imagen de fondo
+fondo = pygame.image.load("Truco\\Truco\\imagenes\\cartas\\mesa_truco.jpg") 
+
+# Escalar la imagen al tamaño de la pantalla
+fondo = pygame.transform.smoothscale(fondo, (ancho, alto))
+
 # Llamada para crear el mazo y obtener las rutas de las imágenes
 mazo, rutas_imagenes, valores_truco = crear_mazo()
 
-# Ahora pasamos el diccionario rutas_imagenes a cargar_imagenes_cartas
+# Cargar imágenes de las cartas
 imagenes_cartas = cargar_imagenes_cartas(rutas_imagenes)
 
 # Crear botones
-boton_truco = Boton(300, 500, 200, 50, "Truco")
-boton_envido = Boton(300, 550, 200, 50, "Envido")
+boton_truco = Boton(200, 550, 200, 30, "Truco")
+boton_envido = Boton(400, 550, 200, 30, "Envido")
 
 # Repartir cartas
 mano_jugador, mano_maquina = repartir_cartas(mazo)
@@ -38,11 +44,11 @@ while jugando:
         if evento.type == pygame.QUIT:
             jugando = False
 
-    # Rellenar el fondo de la pantalla
-    pantalla.fill((255, 255, 255))
+    # Dibujar el fondo
+    pantalla.blit(fondo, (0, 0))
 
     # Mostrar las cartas del jugador
-    carta_seleccionada = mostrar_cartas(pantalla, mano_jugador, imagenes_cartas, 400, es_jugador=True)
+    carta_seleccionada = mostrar_cartas(pantalla, mano_jugador, imagenes_cartas, 300, es_jugador=True)
 
     # Mostrar las cartas de la máquina
     mostrar_cartas(pantalla, mano_maquina, imagenes_cartas, 100, es_jugador=False)
@@ -60,14 +66,13 @@ while jugando:
         print("Botón Envido presionado")
         puntos_jugador, puntos_maquina = manejar_envido(puntos_jugador, puntos_maquina, mano_jugador, mano_maquina)
 
-   # Si el jugador selecciona una carta
+    # Si el jugador selecciona una carta
     if carta_seleccionada:
         if mano_maquina:  # Verificar que la máquina aún tenga cartas
             carta_maquina = mano_maquina.pop(0)  # La máquina juega la primera carta de su mano
             mano_jugador.remove(carta_seleccionada)
-            print(f"Jugador jugó: {carta_seleccionada}, Máquina jugó: {carta_maquina}")
-        else:
-            print("No quedan cartas en la mano de la máquina.")
+
+        print(f"Jugador jugó: {carta_seleccionada}, Máquina jugó: {carta_maquina}")
 
     # Si no quedan cartas en ninguna mano, finalizar la partida
     if not mano_jugador and not mano_maquina:

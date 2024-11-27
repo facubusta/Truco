@@ -4,13 +4,6 @@ class Boton:
     def __init__(self, x, y, ancho, alto, texto, color_boton=(0, 128, 0), color_texto=(255, 255, 255)):
         """
         Constructor para inicializar los atributos del botón.
-
-        Parámetros:
-            x, y: Coordenadas de la posición del botón.
-            ancho, alto: Tamaño del botón.
-            texto: El texto que aparecerá en el botón.
-            color_boton: El color del botón (por defecto verde).
-            color_texto: El color del texto (por defecto blanco).
         """
         self.rect = pygame.Rect(x, y, ancho, alto)  # Rectángulo del botón
         self.texto = texto  # Texto que mostrará el botón
@@ -22,16 +15,13 @@ class Boton:
     def dibujar(self, pantalla):
         """
         Dibuja el botón en la pantalla.
-
-        Parámetros:
-            pantalla: La superficie de pygame donde se dibuja el botón.
         """
         pygame.draw.rect(pantalla, self.color_boton, self.rect)  # Dibujar el rectángulo del botón
         # Dibujar el texto del botón centrado
         pantalla.blit(self.superficie_texto, (self.rect.x + (self.rect.width - self.superficie_texto.get_width()) // 2, 
                                               self.rect.y + (self.rect.height - self.superficie_texto.get_height()) // 2))
 
-    def detectar_clic(self):
+    def detectar_clic(self) -> bool:
         """
         Detecta si el botón fue clickeado.
 

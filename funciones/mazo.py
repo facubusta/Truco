@@ -2,14 +2,11 @@ import random
 import os
 import pygame
 
-CARTA_BOCA_ABAJO = os.path.join(os.path.dirname(__file__), "..", "imagenes", "cartas", "carta_boca_abajo.jpg")
+
 
 def crear_mazo() -> tuple:
     '''
     Crea y devuelve un mazo de cartas mezcladas, sus rutas de imágenes y los valores del truco.
-
-    Retorno:
-        tuple: Mazo mezclado, rutas de imágenes y valores del truco.
     '''
     palos = ("espadas", "bastos", "oros", "copas")
     valores = (1, 2, 3, 4, 5, 6, 7, 10, 11, 12)
@@ -30,19 +27,12 @@ def crear_mazo() -> tuple:
 def cargar_imagenes_cartas(rutas_imagenes: dict) -> dict:
     '''
     Carga las imágenes de las cartas desde las rutas proporcionadas.
-
-    Parámetros:
-        rutas_imagenes (dict): Diccionario con las rutas de las imágenes, donde las claves son tuplas (valor, palo).
-
-    Retorno:
-        dict: Diccionario con las imágenes cargadas, con claves en formato (valor, palo).
     '''
     imagenes = {}
     for carta, ruta in rutas_imagenes.items():
-        # carta ya está en formato (valor, palo), no necesita conversión
+        
         imagenes[carta] = pygame.image.load(ruta)
     
-    # Cargar la imagen de la carta boca abajo
     ruta_boca_abajo = os.path.join(os.path.dirname(__file__), "..", "imagenes", "cartas", "carta_boca_abajo.jpg")
     imagenes["boca_abajo"] = pygame.image.load(ruta_boca_abajo)
 
@@ -51,12 +41,6 @@ def cargar_imagenes_cartas(rutas_imagenes: dict) -> dict:
 def repartir_cartas(mazo: list) -> tuple:
     '''
     Reparte tres cartas para el jugador y tres para la máquina.
-
-    Parámetros:
-        mazo (list): Lista de cartas disponibles.
-
-    Retorno:
-        tuple: (mano_jugador, mano_maquina) con las cartas de cada uno.
     '''
     jugador = [mazo.pop() for _ in range(3)]  # Extraer 3 cartas para el jugador
     maquina = [mazo.pop() for _ in range(3)]  # Extraer 3 cartas para la máquina
@@ -77,35 +61,25 @@ def cargar_valores_truco(archivo: str) -> dict:
 def mostrar_cartas(pantalla: pygame.Surface, mano: list, imagenes: dict, y: int, es_jugador: bool) -> tuple:
     '''
     Dibuja las cartas en pantalla y permite la selección de una carta si es del jugador.
-
-    Parámetros:
-        pantalla (pygame.Surface): Superficie donde se dibujan las cartas.
-        mano (list): Lista de cartas del jugador o la máquina en formato (valor, palo).
-        imagenes (dict): Diccionario con las imágenes de las cartas.
-        y (int): Posición vertical de las cartas.
-        es_jugador (bool): True si las cartas son del jugador (seleccionables).
-
-    Retorno:
-        tuple: La carta seleccionada, o None si no se seleccionó ninguna.
     '''
     x = 50
     carta_seleccionada = None
 
     for carta in mano:
-        carta_rect = pygame.Rect(x, y, 100, 150)  # Área de la carta (100x150 es el tamaño estándar)
+        carta_rect = pygame.Rect(x, y, 100, 150)  # Area de la carta
         
         if es_jugador:
-            pantalla.blit(imagenes[carta], (x, y))  # Mostrar carta boca arriba
+            pantalla.blit(imagenes[carta], (x, y)) 
         else:
-            pantalla.blit(imagenes["boca_abajo"], (x, y))  # Mostrar carta boca abajo para la máquina
+            pantalla.blit(imagenes["boca_abajo"], (x, y))
 
-        # Detectar clic solo si es del jugador
+        # Detectar clic
         if es_jugador and carta_rect.collidepoint(pygame.mouse.get_pos()):
             pygame.draw.rect(pantalla, (255, 0, 0), carta_rect, 3)  # Resaltar la carta con un borde rojo
             if pygame.mouse.get_pressed()[0]:  # Si se hace clic con el botón izquierdo
                 carta_seleccionada = carta
 
-        x += 150  # Separar las cartas horizontalmente
+        x += 150  
 
     return carta_seleccionada
 

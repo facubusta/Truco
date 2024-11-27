@@ -78,7 +78,7 @@ def jugar_mano(mano_jugador: list, mano_maquina: list, valores_truco: dict) -> s
     '''
     Juega una mano completa de truco con 3 rondas y determina el ganador según las reglas del juego.
     '''
-    resultados_rondas = []  # Guardará el resultado de cada ronda ("jugador", "maquina", "empate")
+    resultados_rondas = []  # Guarda el resultado de cada ronda ("jugador", "maquina", "empate")
     
     for ronda in range(3):
         print(f"\nRonda {ronda + 1}:\n")
@@ -141,13 +141,6 @@ def jugar_mano(mano_jugador: list, mano_maquina: list, valores_truco: dict) -> s
 def manejar_truco(puntos_jugador: int, puntos_maquina: int) -> tuple:
     '''
     Maneja el flujo del canto del truco y determina al ganador.
-
-    Parámetros:
-        puntos_jugador (int): Puntaje actual del jugador.
-        puntos_maquina (int): Puntaje actual de la máquina.
-
-    Retorno:
-        tuple: (puntos_jugador, puntos_maquina), puntajes actualizados después del truco.
     '''
     print("La máquina canta Truco. ¿Aceptás? (s/n)")
     respuesta = input().strip().lower()
@@ -159,7 +152,6 @@ def manejar_truco(puntos_jugador: int, puntos_maquina: int) -> tuple:
 
     # Simulación de la lógica del truco: el jugador siempre gana
     print("¡Aceptaste el Truco!")
-    print("La máquina juega su estrategia y el jugador gana.")
     puntos_jugador += 2
 
     return puntos_jugador, puntos_maquina
@@ -167,9 +159,6 @@ def manejar_truco(puntos_jugador: int, puntos_maquina: int) -> tuple:
 def manejar_envido(puntos_jugador: int, puntos_maquina: int, mano_jugador: list, mano_maquina: list) -> tuple:
     '''
     Maneja el flujo del canto de envido y determina al ganador.
-
-    Retorno:
-        tuple: (puntos_jugador, puntos_maquina), puntajes actualizados después del envido.
     '''
     print("¿Querés cantar envido? (s/n)")
     respuesta = input().strip().lower()
@@ -180,7 +169,6 @@ def manejar_envido(puntos_jugador: int, puntos_maquina: int, mano_jugador: list,
     envido_jugador = Calcular_envido(mano_jugador)
     envido_maquina = Calcular_envido(mano_maquina)
 
-    print("La máquina canta envido. ¿Querés aceptar? (s/n)")
     respuesta_maquina = "s" if envido_maquina > 20 else "n"
 
     if respuesta_maquina == "n":
