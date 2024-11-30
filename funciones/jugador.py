@@ -1,34 +1,59 @@
 carta = ()
 
 def Calcular_envido(mano: list) -> int:
-    '''
-    Calcula los puntos de envido en la mano de un jugador, siguiendo las reglas del Truco.
-    '''
-    puntos = 0
-
-    valores_envido = [min(carta[0], 7) for carta in mano]  
+    """
+    Calcula los puntos de Envido en la mano de un jugador según las reglas del Truco.
+    """
+    # Solo considerar las cartas con valores válidos para el Envido (máximo 7)
+    valores_envido = []
+    for carta in mano:
+        valor = carta[0]
+        if valor > 7:  # 10, 11, 12 valen 0
+            valor = 0
+        valores_envido.append(valor)
     
-    for i in range(len(mano)):
-        for j in range(i + 1, len(mano)):
-            # Comparar si las cartas tienen el mismo palo
-            if mano[i][1] == mano[j][1]:  
-                valor_envido = 20 + valores_envido[i] + valores_envido[j] 
-                puntos = max(puntos, valor_envido)  
+    # Agrupar las cartas por palo
+    cartas_por_palo = {}
+    for i, carta in enumerate(mano):
+        palo = carta[1]
+        if palo not in cartas_por_palo:
+            cartas_por_palo[palo] = []
+        cartas_por_palo[palo].append(valores_envido[i])
 
-    return puntos
+    maximo_puntaje = 0
 
-def jugar_maquina(mano: list, carta_jugada: tuple) -> tuple:
-    '''
-    Es una estrategia de juego para la máquina,
-    siguiendo la lógica del truco.
-    '''
+    # Calcular el puntaje del Envido
+    for palo, cartas in cartas_por_palo.items():
+        if len(cartas) >= 2:
+            # Ordenar las cartas de mayor a menor
+            cartas.sort(reverse=True)
+            # Sumar las dos mayores y añadir 20
+            puntaje = cartas[0] + cartas[1] + 20
+            maximo_puntaje = max(maximo_puntaje, puntaje)
+    
+    # Si no hay cartas del mismo palo, tomar el valor más alto
+    if maximo_puntaje == 0:
+        maximo_puntaje = max(valores_envido)
+
+    return maximo_puntaje
+
+def jugar_maquina(mano: list, carta_jugada: tuple = None) -> tuple:
+    """
+    Estrategia de la máquina para jugar una carta.
+    Si se proporciona una carta_jugada, intenta superarla. Si no, juega su carta más alta.
+    """
     mano_ordenada = sorted(mano, key=lambda carta: carta[0], reverse=True)
 
-    
+    if carta_jugada is None:
+        # Si no hay una carta jugada, juega la carta más alta
+        return mano_ordenada[0]
+
+    # Si hay una carta jugada, intenta superarla
     for carta in mano_ordenada:
-        if carta[0] >= carta_jugada[0]:  
+        if carta[0] > carta_jugada[0]:
             return carta
 
+    # Si no puede superar la carta jugada, juega la más baja
     return mano_ordenada[-1]
 
 def decidir_canto_maquina(mano: list, tipo: str) -> str:

@@ -1,6 +1,8 @@
+import pygame
 from funciones.mazo import *
 from funciones.jugador import *
 from funciones.puntuacion import *
+from funciones.botones import Boton
 
 def inicializar_juego(puntos_victoria: int) -> None:
     '''
@@ -138,59 +140,268 @@ def jugar_mano(mano_jugador: list, mano_maquina: list, valores_truco: dict) -> s
     else:
         return "empate"  # En caso de empate en rondas
 
-def manejar_truco(puntos_jugador: int, puntos_maquina: int) -> tuple:
-    '''
-    Maneja el flujo del canto del truco y determina al ganador.
-    '''
-    print("La máquina canta Truco. ¿Aceptás? (s/n)")
-    respuesta = input().strip().lower()
+def manejar_truco(turno: str, es_canto_inicial: bool = True) -> int:
+    """
+    Maneja el flujo del canto del Truco, asegurando que los puntos se asignen al final.
 
-    if respuesta == "n":
-        print("No aceptaste el Truco. La máquina gana 1 punto.")
-        puntos_maquina += 1
-        return puntos_jugador, puntos_maquina
+    Retorno:
+        int: Puntos que vale el Truco (2, 3 o 4) para sumarlos al final de la ronda.
+    """
+    puntos_canto = 2  # El Truco inicialmente vale 2 puntos
+    canto_actual = "Truco"
+    finalizado = False
 
-    # Simulación de la lógica del truco: el jugador siempre gana
-    print("¡Aceptaste el Truco!")
-    puntos_jugador += 2
+    while not finalizado:
+        if turno == "jugador":
+            if es_canto_inicial:
+                print(f"¿Querés cantar {canto_actual}? (s/n)")
+                decision = input().strip().lower()
+                if decision == "s":
+                    print(f"Cantaste {canto_actual}.")
+                    turno = "maquina"
+                    es_canto_inicial = False
+                else:
+                    print("Decidiste no cantar Truco.")
+                    return 0
 
-    return puntos_jugador, puntos_maquina
+            else:
+                print(f"La máquina cantó {canto_actual}. ¿Aceptás, subís o rechazás? (s/re/n): ")
+                decision = input().strip().lower()
+                while decision not in ("s", "re", "n"):
+                    print("Respuesta inválida. Por favor, elegí entre 's' (aceptar), 're' (subir) o 'n' (rechazar).")
+                    decision = input().strip().lower()
+
+                if decision == "n":
+                    print(f"Rechazaste el {canto_actual}. La máquina gana 1 punto.")
+                    return 0
+                elif decision == "re" and canto_actual != "Vale Cuatro":
+                    canto_actual = {"Truco": "Re Truco", "Re Truco": "Vale Cuatro"}[canto_actual]
+                    puntos_canto = {"Truco": 2, "Re Truco": 3, "Vale Cuatro": 4}[canto_actual]
+                    print(f"Cantaste {canto_actual}.")
+                    turno = "maquina"
+                elif decision == "s":
+                    print(f"¡Aceptaste el {canto_actual}!")
+                    finalizado = True
+
+        elif turno == "maquina":
+            if es_canto_inicial:
+                decision_maquina = "s"  # La lógica puede ajustarse si hay más reglas
+                if decision_maquina == "n":
+                    print("La máquina rechazó el Truco. Sumás 1 punto.")
+                    return 0
+                else:
+                    print(f"La máquina aceptó el {canto_actual}.")
+                    turno = "jugador"
+                    es_canto_inicial = False
+            else:
+                decision_maquina = "s"  # Aquí puede haber lógica adicional
+                if decision_maquina == "n":
+                    print(f"La máquina rechazó el {canto_actual}. Ganás 1 punto.")
+                    return 0
+                elif decision_maquina == "re" and canto_actual != "Vale Cuatro":
+                    canto_actual = {"Truco": "Re Truco", "Re Truco": "Vale Cuatro"}[canto_actual]
+                    puntos_canto = {"Truco": 2, "Re Truco": 3, "Vale Cuatro": 4}[canto_actual]
+                    print(f"La máquina cantó {canto_actual}.")
+                    turno = "jugador"
+                elif decision_maquina == "s":
+                    print(f"La máquina aceptó el {canto_actual}.")
+                    finalizado = True
+
+    return puntos_canto
 
 def manejar_envido(puntos_jugador: int, puntos_maquina: int, mano_jugador: list, mano_maquina: list) -> tuple:
     '''
     Maneja el flujo del canto de envido y determina al ganador.
     '''
-    print("¿Querés cantar envido? (s/n)")
-    respuesta = input().strip().lower()
-
-    if respuesta != "s":
-        return puntos_jugador, puntos_maquina
-
     envido_jugador = Calcular_envido(mano_jugador)
     envido_maquina = Calcular_envido(mano_maquina)
+    print(f"Tus puntos: {envido_jugador}")
 
-    respuesta_maquina = "s" if envido_maquina > 20 else "n"
+    # Máquina decide si acepta, sube o rechaza
+    if envido_maquina > 20:
+        respuesta_maquina = "s" if envido_maquina >= envido_jugador else "real"  # Máquina sube si tiene más puntos
+    else:
+        respuesta_maquina = "n"
 
     if respuesta_maquina == "n":
         puntos_jugador += calcular_puntos_envido("envido no querido")
+        print("La máquina rechazó el Envido. Sumás 1 punto.")
         return puntos_jugador, puntos_maquina
+    elif respuesta_maquina in ["real", "falta"]:
+        print(f"La máquina cantó {respuesta_maquina.capitalize()} Envido.")
+        print(f"¿Aceptás, subís o rechazás? (s/{respuesta_maquina}/n)")
+        decision = input().strip().lower()
 
-    print(f"Tus puntos: {envido_jugador}, Máquina: {envido_maquina}")
+        if decision == "n":
+            puntos_maquina += calcular_puntos_envido("envido no querido")
+            print("Rechazaste el Envido. La máquina suma 1 punto.")
+            return puntos_jugador, puntos_maquina
+        elif decision == "real":
+            print("¡Aceptaste el Real Envido!")
+            puntos_jugador += calcular_puntos_envido("real envido")
+        elif decision == "falta":
+            print("¡Aceptaste la Falta Envido!")
+            puntos_ganados = calcular_puntos_envido("falta envido", puntos_jugador, puntos_maquina)
+            if envido_jugador > envido_maquina:
+                puntos_jugador += puntos_ganados
+            else:
+                puntos_maquina += puntos_ganados
+            return puntos_jugador, puntos_maquina
+
+    # Comparar puntos del Envido
     if envido_jugador > envido_maquina:
+        print(f"Tus puntos: {envido_jugador}, Máquina: {envido_maquina}")
+        print("Ganaste el Envido.")
         puntos_jugador += calcular_puntos_envido("envido ganado")
     elif envido_jugador < envido_maquina:
+        print(f"Tus puntos: {envido_jugador}, Máquina: {envido_maquina}")
+        print("La máquina ganó el Envido.")
         puntos_maquina += calcular_puntos_envido("envido ganado")
     else:
-        print("Empate en envido.")
+        print(f"Tus puntos: {envido_jugador}, Máquina: {envido_maquina}")
+        print("Empate en el Envido. No suman puntos.")
     return puntos_jugador, puntos_maquina
 
+def evaluar_mano(cartas: tuple, valores_truco: dict) -> str:
+    """
+    Evalúa quién gana una mano según las cartas jugadas y sus valores.
 
+    Parámetros:
+        cartas (tuple): Una tupla con las cartas jugadas por el jugador y la máquina.
+                        Ejemplo: ((10, "oros"), (2, "oros")).
+        valores_truco (dict): Diccionario con los valores de las cartas en el Truco.
 
+    Retorno:
+        str: "jugador" si gana el jugador, "maquina" si gana la máquina o "empate".
+    """
+    carta_jugador, carta_maquina = cartas
+    valor_jugador = valores_truco[f"{carta_jugador[0]} de {carta_jugador[1]}"]
+    valor_maquina = valores_truco[f"{carta_maquina[0]} de {carta_maquina[1]}"]
 
+    if valor_jugador > valor_maquina:
+        return "jugador"
+    elif valor_jugador < valor_maquina:
+        return "maquina"
+    else:
+        return "empate"
 
+def determinar_ganador_ronda(ganadores_manos: dict) -> str:
+    """
+    Determina quién ganó la ronda según las manos ganadas por cada jugador.
 
+    Parámetros:
+        ganadores_manos (dict): Diccionario con el conteo de manos ganadas.
+                                Ejemplo: {"jugador": 2, "maquina": 1}
 
+    Retorno:
+        str: "jugador" si gana el jugador, "maquina" si gana la máquina o "empate" si no se decide.
+    """
+    if ganadores_manos["jugador"] >= 2:
+        return "jugador"
+    elif ganadores_manos["maquina"] >= 2:
+        return "maquina"
+    else:
+        return "empate"  # Si no se llegó a 2 manos ganadas por nadie
 
+def gestionar_truco_interfaz(pantalla, turno, puntos_jugador, puntos_maquina) -> tuple:
+    """
+    Maneja la lógica del Truco, Re Truco y Vale Cuatro en la interfaz gráfica.
+
+    Parámetros:
+        pantalla (pygame.Surface): Superficie de pygame.
+        turno (str): Quién inicia el canto ("jugador" o "maquina").
+        puntos_jugador (int): Puntaje actual del jugador.
+        puntos_maquina (int): Puntaje actual de la máquina.
+
+    Retorno:
+        tuple: (puntos_jugador, puntos_maquina, canto_terminado).
+    """
+    # Crear los botones para aceptar, subir y rechazar
+    boton_aceptar = Boton(200, 500, 150, 50, "Aceptar")
+    boton_subir = Boton(400, 500, 150, 50, "Subir")
+    boton_rechazar = Boton(600, 500, 150, 50, "Rechazar")
+
+    puntos_canto = {"Truco": 2, "Re Truco": 3, "Vale Cuatro": 4}
+    canto_actual = "Truco"
+    canto_terminado = False
+
+    while not canto_terminado:
+        for evento in pygame.event.get():
+            if evento.type == pygame.QUIT:
+                pygame.quit()
+                return puntos_jugador, puntos_maquina, True
+
+        pantalla.fill((0, 128, 0))  # Fondo verde
+        boton_aceptar.dibujar(pantalla)
+        boton_subir.dibujar(pantalla)
+        boton_rechazar.dibujar(pantalla)
+
+        pygame.display.flip()
+
+        if turno == "jugador":
+            if boton_aceptar.detectar_clic():
+                print(f"¡Aceptaste el {canto_actual}!")
+                turno = "maquina"
+            elif boton_subir.detectar_clic() and canto_actual != "Vale Cuatro":
+                canto_actual = {"Truco": "Re Truco", "Re Truco": "Vale Cuatro"}[canto_actual]
+                print(f"Subiste el canto a {canto_actual}.")
+                turno = "maquina"
+            elif boton_rechazar.detectar_clic():
+                puntos_maquina += puntos_canto[canto_actual] - 1
+                print(f"Rechazaste el {canto_actual}. La máquina gana {puntos_canto[canto_actual] - 1} puntos.")
+                return puntos_jugador, puntos_maquina, True
+        elif turno == "maquina":
+            if canto_actual == "Vale Cuatro" or (canto_actual == "Re Truco" and puntos_canto[canto_actual] > 0):
+                print(f"La máquina aceptó el {canto_actual}.")
+                turno = "jugador"
+            else:
+                decision_maquina = "re" if canto_actual != "Vale Cuatro" else "s"
+                if decision_maquina == "n":
+                    puntos_jugador += puntos_canto[canto_actual] - 1
+                    print(f"La máquina rechazó el {canto_actual}. Ganás {puntos_canto[canto_actual] - 1} puntos.")
+                    return puntos_jugador, puntos_maquina, True
+                elif decision_maquina == "re":
+                    canto_actual = {"Truco": "Re Truco", "Re Truco": "Vale Cuatro"}[canto_actual]
+                    print(f"La máquina cantó {canto_actual}.")
+                    turno = "jugador"
+
+    return puntos_jugador, puntos_maquina, False
+
+def manejar_truco_maquina(canto_actual: str, puntos_jugador: int, puntos_maquina: int) -> str:
+    """
+    Maneja la respuesta automática de la máquina al canto del Truco.
+
+    Parámetros:
+        canto_actual (str): Canto en curso ("Truco", "Re Truco", "Vale Cuatro").
+        puntos_jugador (int): Puntos del jugador.
+        puntos_maquina (int): Puntos de la máquina.
+
+    Retorno:
+        str: Decisión de la máquina ("s", "re", "n").
+    """
+    if canto_actual == "Truco":
+        return "s" if puntos_maquina < 10 else "n"
+    elif canto_actual == "Re Truco":
+        return "s" if puntos_maquina < 12 else "n"
+    else:  # Vale Cuatro
+        return "n"  # Por simplicidad, rechazará Vale Cuatro si ya llegó aquí.
+
+def manejar_truco_jugador(canto_actual: str) -> str:
+    """
+    Maneja la interacción con el jugador para el canto del Truco.
+
+    Parámetros:
+        canto_actual (str): Canto en curso ("Truco", "Re Truco", "Vale Cuatro").
+
+    Retorno:
+        str: Decisión del jugador ("s", "re", "n").
+    """
+    print(f"La máquina cantó {canto_actual}. ¿Aceptás, subís o rechazás? (s/re/n): ")
+    decision = input().strip().lower()
+    while decision not in ("s", "re", "n"):
+        print("Respuesta inválida. Por favor, elegí entre 's' (aceptar), 're' (subir) o 'n' (rechazar).")
+        decision = input().strip().lower()
+    return decision
 
 
 

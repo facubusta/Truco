@@ -1,0 +1,39 @@
+# Paleta 1: Colores básicos
+ROJO = (255, 0, 0)
+VERDE = (0, 255, 0)
+AZUL = (0, 0, 255)
+NEGRO = (0, 0, 0)
+BLANCO = (255, 255, 255)
+AMARILLO = (255, 255, 0)
+CYAN = (0, 255, 255)
+MAGENTA = (255, 0, 255)
+
+# Paleta 2: Colores pastel
+ROSA = (255, 182, 193)
+CELESTE = (173, 216, 230)
+MENTA = (152, 251, 152)
+LAVANDA = (230, 230, 250)
+AMARILLO_PASTEL = (255, 255, 204)
+MELOCOTON = (255, 218, 185)
+
+# Paleta 3: Tonos oscuros
+VINO = (128, 0, 64)
+VERDE_OSCURO = (0, 100, 0)
+AZUL_MARINO = (0, 0, 128)
+GRIS_OSCURO = (64, 64, 64)
+MARRON = (139, 69, 19)
+PURPURA_OSCURO = (48, 25, 52)
+
+# Paleta 4: Tonos tierra
+ARENA = (194, 178, 128)
+TERRACOTA = (210, 105, 30)
+VERDE_OLIVA = (107, 142, 35)
+OCRE = (204, 119, 34)
+MARRON_CLARO = (210, 180, 140)
+
+# Paleta 5: Colores neón
+ROSA_NEON = (255, 20, 147)
+VERDE_NEON = (57, 255, 20)
+AZUL_NEON = (0, 191, 255)
+AMARILLO_NEON = (255, 255, 0)
+MORADO_NEON = (191, 0, 255)
