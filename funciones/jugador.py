@@ -1,4 +1,5 @@
 carta = ()
+from funciones.juego import *
 
 def Calcular_envido(mano: list) -> int:
     """
@@ -67,3 +68,29 @@ def decidir_canto_maquina(mano: list, tipo: str) -> str:
         return "n"
     elif tipo == "truco":
         return "s"
+    
+def turno_maquina(mano_maquina: list, cartas_jugadas: list, valores_truco: dict, turno_actual: str, manos_ganadas: dict) -> str:
+    """
+    Maneja el turno de la máquina y actualiza los estados necesarios.
+    """
+    if turno_actual == "maquina" and mano_maquina:
+        carta_maquina = jugar_maquina(mano_maquina)
+        mano_maquina.remove(carta_maquina)
+        carta_jugador = cartas_jugadas[-1][0] if cartas_jugadas else None
+        cartas_jugadas.append((carta_jugador, carta_maquina))
+        print(f"La máquina jugó: {carta_maquina}")
+
+        # Evaluar quién ganó la mano
+        ganador_mano = evaluar_mano(cartas_jugadas[-1], valores_truco)
+        if ganador_mano == "jugador":
+            print("Ganaste esta mano.")
+            manos_ganadas["jugador"] += 1
+            return "jugador"  # El jugador inicia la próxima mano
+        elif ganador_mano == "maquina":
+            print("La máquina ganó esta mano.")
+            manos_ganadas["maquina"] += 1
+            return "maquina"  # La máquina inicia la próxima mano
+        else:
+            print("Empate en esta mano.")
+            return "jugador"  # En caso de empate, el jugador sigue
+    return turno_actual

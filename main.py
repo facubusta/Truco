@@ -3,7 +3,6 @@ from funciones.mazo import *
 from funciones.botones import *
 from funciones.puntuacion import *
 from funciones.juego import *
-import time
 
 # Inicialización de pygame
 pygame.init()
@@ -33,7 +32,7 @@ cartas_jugadas = []  # Guarda las cartas jugadas en la ronda actual
 puntos_truco = 0  # Puntos en juego por el Truco
 envido_jugado = False  # Controla si el Envido ya fue jugado en la ronda
 ronda_activa = True  # Controla si la ronda está activa
-mazo_presionado = False  # Controla si se presionó el botón "Irse al mazo"
+manos_ganadas = {"jugador": 0, "maquina": 0}  # Cuenta las manos ganadas por cada jugador
 
 # Bucle principal
 while jugando:
@@ -41,7 +40,7 @@ while jugando:
         if evento.type == pygame.QUIT:
             jugando = False
 
-        # Detectar clic en cartas solo si la ronda está activa
+        # Detectar clic en cartas solo si la ronda está activa y es el turno del jugador
         if evento.type == pygame.MOUSEBUTTONDOWN and ronda_activa and turno_actual == "jugador":
             carta_seleccionada = mostrar_cartas(pantalla, mano_jugador, imagenes_cartas, 300, es_jugador=True)
 
@@ -57,13 +56,36 @@ while jugando:
                 ganador_mano = evaluar_mano(cartas_jugadas[-1], valores_truco)
                 if ganador_mano == "jugador":
                     print("Ganaste esta mano.")
+                    manos_ganadas["jugador"] += 1
                     turno_actual = "jugador"  # El jugador sigue si gana
                 elif ganador_mano == "maquina":
                     print("La máquina ganó esta mano.")
+                    manos_ganadas["maquina"] += 1
                     turno_actual = "maquina"  # Cambia el turno a la máquina
                 else:
                     print("Empate en esta mano.")
                     turno_actual = "jugador"  # En caso de empate, el jugador sigue
+
+                # Verificar si se completaron las 3 manos
+                if len(cartas_jugadas) == 3:
+                    ronda_activa = False
+                    puntos_jugador, puntos_maquina = determinar_ganador_final(
+                        puntos_jugador, puntos_maquina, cartas_jugadas, manos_ganadas, puntos_truco
+                    )
+                    mazo, mano_jugador, mano_maquina, cartas_jugadas, turno_actual, manos_ganadas, puntos_truco, envido_jugado, ronda_activa = reiniciar_ronda()
+
+    # Turno de la máquina
+    if turno_actual == "maquina" and ronda_activa:
+        pygame.time.delay(500)  # Dar un pequeño retraso para simular la jugada de la máquina
+        turno_actual = turno_maquina(mano_maquina, cartas_jugadas, valores_truco, turno_actual, manos_ganadas)
+
+        # Verificar si se completaron las 3 manos
+        if len(cartas_jugadas) == 3:
+            ronda_activa = False
+            puntos_jugador, puntos_maquina = determinar_ganador_final(
+                puntos_jugador, puntos_maquina, cartas_jugadas, manos_ganadas, puntos_truco
+            )
+            mazo, mano_jugador, mano_maquina, cartas_jugadas, turno_actual, manos_ganadas, puntos_truco, envido_jugado, ronda_activa = reiniciar_ronda()
 
     # Dibujar fondo y elementos
     pantalla.blit(fondo, (0, 0))
@@ -94,29 +116,16 @@ while jugando:
             print("El Truco no fue aceptado.")
 
     # Detectar clic en el botón Mazo
-    if boton_mazo.detectar_clic() and ronda_activa and not mazo_presionado:
-        mazo_presionado = True
+    if boton_mazo.detectar_clic() and ronda_activa:
+        print("Clic en el botón Mazo detectado")
         ronda_activa = False
-
         if turno_actual == "jugador":
             print("Te fuiste al mazo. La máquina gana 2 puntos.")
             puntos_maquina += 2
         else:
             print("La máquina se fue al mazo. Sumás 2 puntos.")
             puntos_jugador += 2
-
-        # Agregar retraso para reiniciar ronda
-        pygame.time.delay(1000)  # 1 segundo para evitar múltiples activaciones
-        print("Comienza una nueva ronda.")
-        mazo, rutas_imagenes, valores_truco = crear_mazo()
-        mano_jugador, mano_maquina = repartir_cartas(mazo)
-        cartas_jugadas = []
-        turno_actual = "jugador"  # Reinicia el turno
-        puntos_truco = 0
-        envido_jugado = False
-        mazo_presionado = False
-        ronda_activa = True
-        continue  # Salta a la siguiente iteración del bucle principal
+        mazo, mano_jugador, mano_maquina, cartas_jugadas, turno_actual, manos_ganadas, puntos_truco, envido_jugado, ronda_activa = reiniciar_ronda()
 
     # Verificar fin del juego
     if puntos_jugador >= 15 or puntos_maquina >= 15:

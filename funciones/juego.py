@@ -448,6 +448,23 @@ def determinar_ganador_final(puntos_jugador: int, puntos_maquina: int, cartas_ju
     # Reiniciar la ronda
     return puntos_jugador, puntos_maquina
 
+def reiniciar_ronda() -> tuple:
+    """
+    Reinicia la ronda estableciendo nuevas cartas y reiniciando variables.
+    Retorno:
+        tuple: (mazo, mano_jugador, mano_maquina, cartas_jugadas, turno_actual, manos_ganadas, puntos_truco, envido_jugado, ronda_activa)
+    """
+    print("Comienza una nueva ronda.")
+    mazo, rutas_imagenes, valores_truco = crear_mazo()
+    mano_jugador, mano_maquina = repartir_cartas(mazo)
+    cartas_jugadas = []
+    turno_actual = "jugador"  # Reinicia el turno al jugador por defecto
+    manos_ganadas = {"jugador": 0, "maquina": 0}
+    puntos_truco = 0
+    envido_jugado = False
+    ronda_activa = True
+    pygame.time.delay(500)  # Pequeño retraso para mejor visualización
+    return mazo, mano_jugador, mano_maquina, cartas_jugadas, turno_actual, manos_ganadas, puntos_truco, envido_jugado, ronda_activa
 
 
 
