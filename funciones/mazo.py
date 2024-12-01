@@ -2,8 +2,6 @@ import random
 import os
 import pygame
 
-
-
 def crear_mazo() -> tuple:
     '''
     Crea y devuelve un mazo de cartas mezcladas, sus rutas de imágenes y los valores del truco.

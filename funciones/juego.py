@@ -403,6 +403,51 @@ def manejar_truco_jugador(canto_actual: str) -> str:
         decision = input().strip().lower()
     return decision
 
+def turno_maquina(mano_maquina: list, cartas_jugadas: list, valores_truco: dict, turno_actual: str, manos_ganadas: dict) -> str:
+    """
+    Maneja el turno de la máquina y actualiza los estados necesarios.
+    """
+    if turno_actual == "maquina" and mano_maquina:
+        carta_maquina = jugar_maquina(mano_maquina)
+        mano_maquina.remove(carta_maquina)
+        carta_jugador = cartas_jugadas[-1][0] if cartas_jugadas else None
+        cartas_jugadas.append((carta_jugador, carta_maquina))
+        print(f"La máquina jugó: {carta_maquina}")
+
+        # Evaluar quién ganó la mano
+        ganador_mano = evaluar_mano(cartas_jugadas[-1], valores_truco)
+        if ganador_mano == "jugador":
+            print("Ganaste esta mano.")
+            manos_ganadas["jugador"] += 1
+            return "jugador"  # El jugador inicia la próxima mano
+        elif ganador_mano == "maquina":
+            print("La máquina ganó esta mano.")
+            manos_ganadas["maquina"] += 1
+            return "maquina"  # La máquina inicia la próxima mano
+        else:
+            print("Empate en esta mano.")
+            return "jugador"  # En caso de empate, el jugador sigue
+    return turno_actual
+
+def determinar_ganador_final(puntos_jugador: int, puntos_maquina: int, cartas_jugadas: list, manos_ganadas: dict,
+                             puntos_truco: int) -> tuple:
+    """
+    Determina el ganador de la ronda y actualiza los puntos.
+    """
+    print("¡Fin de la ronda!")
+    ganador_ronda = determinar_ganador_ronda(manos_ganadas)
+    if ganador_ronda == "jugador":
+        puntos_jugador += puntos_truco if puntos_truco > 0 else 1
+        print("Ganaste la ronda.")
+    elif ganador_ronda == "maquina":
+        puntos_maquina += puntos_truco if puntos_truco > 0 else 1
+        print("La máquina ganó la ronda.")
+    else:
+        print("La ronda terminó en empate.")
+
+    # Reiniciar la ronda
+    return puntos_jugador, puntos_maquina
+
 
 
 
