@@ -404,10 +404,8 @@ def manejar_truco_jugador(canto_actual: str) -> str:
     return decision
 
 def turno_maquina(mano_maquina: list, cartas_jugadas: list, valores_truco: dict, turno_actual: str, manos_ganadas: dict) -> str:
-    """
-    Maneja el turno de la máquina y actualiza los estados necesarios.
-    """
     if turno_actual == "maquina" and mano_maquina:
+        pygame.time.delay(500)  # Retraso para simular el turno
         carta_maquina = jugar_maquina(mano_maquina)
         mano_maquina.remove(carta_maquina)
         carta_jugador = cartas_jugadas[-1][0] if cartas_jugadas else None
@@ -419,14 +417,20 @@ def turno_maquina(mano_maquina: list, cartas_jugadas: list, valores_truco: dict,
         if ganador_mano == "jugador":
             print("Ganaste esta mano.")
             manos_ganadas["jugador"] += 1
-            return "jugador"  # El jugador inicia la próxima mano
+            return "jugador"
         elif ganador_mano == "maquina":
             print("La máquina ganó esta mano.")
             manos_ganadas["maquina"] += 1
-            return "maquina"  # La máquina inicia la próxima mano
+            return "maquina"
         else:
             print("Empate en esta mano.")
-            return "jugador"  # En caso de empate, el jugador sigue
+            return "jugador"
+
+        # Verificar si alguien ganó dos manos
+        if manos_ganadas["jugador"] == 2 or manos_ganadas["maquina"] == 2:
+            print("Se ganaron dos manos. Fin de la ronda.")
+            return "fin_ronda"
+
     return turno_actual
 
 def determinar_ganador_final(puntos_jugador: int, puntos_maquina: int, cartas_jugadas: list, manos_ganadas: dict,
@@ -448,27 +452,58 @@ def determinar_ganador_final(puntos_jugador: int, puntos_maquina: int, cartas_ju
     # Reiniciar la ronda
     return puntos_jugador, puntos_maquina
 
-def reiniciar_ronda() -> tuple:
+def reiniciar_ronda(
+    mazo: list,
+    mano_jugador: list,
+    mano_maquina: list,
+    cartas_jugadas: list,
+    turno_actual: str,
+    manos_ganadas: dict,
+    puntos_truco: int,
+    envido_jugado: bool,
+    ronda_activa: bool,
+    inicia_ronda: str
+) -> None:
     """
-    Reinicia la ronda estableciendo nuevas cartas y reiniciando variables.
-    Retorno:
-        tuple: (mazo, mano_jugador, mano_maquina, cartas_jugadas, turno_actual, manos_ganadas, puntos_truco, envido_jugado, ronda_activa)
+    Reinicia las variables necesarias para iniciar una nueva ronda.
+
+    Parámetros:
+        mazo (list): El mazo de cartas para repartir.
+        mano_jugador (list): Las cartas en mano del jugador.
+        mano_maquina (list): Las cartas en mano de la máquina.
+        cartas_jugadas (list): Las cartas jugadas en la ronda.
+        turno_actual (str): El jugador que inicia la ronda.
+        manos_ganadas (dict): Diccionario con las manos ganadas por cada jugador.
+        puntos_truco (int): Los puntos en juego por el truco.
+        envido_jugado (bool): Indica si se jugó el envido en la ronda.
+        ronda_activa (bool): Indica si la ronda está activa.
+        inicia_ronda (str): Alterna entre "jugador" y "maquina" para iniciar la ronda.
     """
     print("Comienza una nueva ronda.")
-    mazo, rutas_imagenes, valores_truco = crear_mazo()
-    mano_jugador, mano_maquina = repartir_cartas(mazo)
-    cartas_jugadas = []
-    turno_actual = "jugador"  # Reinicia el turno al jugador por defecto
-    manos_ganadas = {"jugador": 0, "maquina": 0}
+    # Crear un nuevo mazo y repartir cartas
+    mazo.clear()
+    nuevo_mazo, rutas_imagenes, valores_truco = crear_mazo()
+    mazo.extend(nuevo_mazo)
+    mano_jugador.clear()
+    mano_jugador.extend(mazo[:3])
+    del mazo[:3]
+    mano_maquina.clear()
+    mano_maquina.extend(mazo[:3])
+    del mazo[:3]
+
+    # Reiniciar variables
+    cartas_jugadas.clear()
+    manos_ganadas["jugador"] = 0
+    manos_ganadas["maquina"] = 0
     puntos_truco = 0
     envido_jugado = False
     ronda_activa = True
-    pygame.time.delay(500)  # Pequeño retraso para mejor visualización
-    return mazo, mano_jugador, mano_maquina, cartas_jugadas, turno_actual, manos_ganadas, puntos_truco, envido_jugado, ronda_activa
 
+    # Alternar quién inicia la ronda
+    turno_actual = inicia_ronda
+    inicia_ronda = "maquina" if inicia_ronda == "jugador" else "jugador"
 
-
-
+    pygame.time.delay(500)  # Dar un pequeño tiempo de espera para iniciar la nueva ronda
 
 
 

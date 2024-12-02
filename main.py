@@ -34,6 +34,20 @@ envido_jugado = False  # Controla si el Envido ya fue jugado en la ronda
 ronda_activa = True  # Controla si la ronda está activa
 manos_ganadas = {"jugador": 0, "maquina": 0}  # Cuenta las manos ganadas por cada jugador
 
+# Función para reiniciar la ronda
+def reiniciar_ronda():
+    global mazo, mano_jugador, mano_maquina, cartas_jugadas, turno_actual, manos_ganadas, puntos_truco, envido_jugado, ronda_activa
+    print("Comienza una nueva ronda.")
+    mazo, rutas_imagenes, valores_truco = crear_mazo()
+    mano_jugador, mano_maquina = repartir_cartas(mazo)
+    cartas_jugadas = []
+    turno_actual = "jugador"  # Reinicia el turno al jugador por defecto
+    manos_ganadas = {"jugador": 0, "maquina": 0}
+    puntos_truco = 0
+    envido_jugado = False
+    ronda_activa = True
+    pygame.time.delay(500)
+
 # Bucle principal
 while jugando:
     for evento in pygame.event.get():
@@ -57,35 +71,62 @@ while jugando:
                 if ganador_mano == "jugador":
                     print("Ganaste esta mano.")
                     manos_ganadas["jugador"] += 1
-                    turno_actual = "jugador"  # El jugador sigue si gana
+                    turno_actual = "jugador"
                 elif ganador_mano == "maquina":
                     print("La máquina ganó esta mano.")
                     manos_ganadas["maquina"] += 1
-                    turno_actual = "maquina"  # Cambia el turno a la máquina
+                    turno_actual = "maquina"
                 else:
                     print("Empate en esta mano.")
-                    turno_actual = "jugador"  # En caso de empate, el jugador sigue
+                    turno_actual = "jugador"
 
-                # Verificar si se completaron las 3 manos
-                if len(cartas_jugadas) == 3:
+                # Verificar si alguien ganó dos manos
+                if manos_ganadas["jugador"] == 2 or manos_ganadas["maquina"] == 2:
                     ronda_activa = False
                     puntos_jugador, puntos_maquina = determinar_ganador_final(
                         puntos_jugador, puntos_maquina, cartas_jugadas, manos_ganadas, puntos_truco
                     )
-                    mazo, mano_jugador, mano_maquina, cartas_jugadas, turno_actual, manos_ganadas, puntos_truco, envido_jugado, ronda_activa = reiniciar_ronda()
+                    reiniciar_ronda()
 
     # Turno de la máquina
     if turno_actual == "maquina" and ronda_activa:
-        pygame.time.delay(500)  # Dar un pequeño retraso para simular la jugada de la máquina
-        turno_actual = turno_maquina(mano_maquina, cartas_jugadas, valores_truco, turno_actual, manos_ganadas)
+        pygame.time.delay(500)  # Simular un retraso para la jugada de la máquina
+        
+        # Verificar si es una nueva jugada o una respuesta
+        if not cartas_jugadas or cartas_jugadas[-1][1] is not None:  # No hay jugada incompleta
+            carta_maquina = mano_maquina.pop(0)  # La máquina juega su carta más alta disponible
+            cartas_jugadas.append((None, carta_maquina))  # La máquina comienza la jugada
+            print(f"La máquina jugó: {carta_maquina}")
+            turno_actual = "jugador"  # Cambia el turno al jugador para responder
+        elif cartas_jugadas[-1][0] is not None and cartas_jugadas[-1][1] is None:
+            # Responder a la jugada del jugador
+            carta_jugador = cartas_jugadas[-1][0]
+            carta_maquina = jugar_maquina(mano_maquina, carta_jugador)  # Jugar en respuesta
+            mano_maquina.remove(carta_maquina)
+            cartas_jugadas[-1] = (carta_jugador, carta_maquina)  # Completar la jugada
+            print(f"La máquina jugó: {carta_maquina}")
 
-        # Verificar si se completaron las 3 manos
-        if len(cartas_jugadas) == 3:
-            ronda_activa = False
-            puntos_jugador, puntos_maquina = determinar_ganador_final(
-                puntos_jugador, puntos_maquina, cartas_jugadas, manos_ganadas, puntos_truco
-            )
-            mazo, mano_jugador, mano_maquina, cartas_jugadas, turno_actual, manos_ganadas, puntos_truco, envido_jugado, ronda_activa = reiniciar_ronda()
+            # Evaluar quién ganó la mano
+            ganador_mano = evaluar_mano(cartas_jugadas[-1], valores_truco)
+            if ganador_mano == "jugador":
+                print("Ganaste esta mano.")
+                manos_ganadas["jugador"] += 1
+                turno_actual = "jugador"  # El jugador comienza la siguiente jugada
+            elif ganador_mano == "maquina":
+                print("La máquina ganó esta mano.")
+                manos_ganadas["maquina"] += 1
+                turno_actual = "maquina"  # La máquina sigue jugando
+            else:
+                print("Empate en esta mano.")
+                turno_actual = "jugador"  # Por defecto, turno al jugador en caso de empate
+
+            # Verificar si alguien ganó dos manos
+            if manos_ganadas["jugador"] == 2 or manos_ganadas["maquina"] == 2:
+                ronda_activa = False
+                puntos_jugador, puntos_maquina = determinar_ganador_final(
+                    puntos_jugador, puntos_maquina, cartas_jugadas, manos_ganadas, puntos_truco
+                )
+                reiniciar_ronda()
 
     # Dibujar fondo y elementos
     pantalla.blit(fondo, (0, 0))
@@ -125,7 +166,7 @@ while jugando:
         else:
             print("La máquina se fue al mazo. Sumás 2 puntos.")
             puntos_jugador += 2
-        mazo, mano_jugador, mano_maquina, cartas_jugadas, turno_actual, manos_ganadas, puntos_truco, envido_jugado, ronda_activa = reiniciar_ronda()
+        reiniciar_ronda()
 
     # Verificar fin del juego
     if puntos_jugador >= 15 or puntos_maquina >= 15:
