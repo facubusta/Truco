@@ -88,22 +88,23 @@ while jugando:
                     )
                     reiniciar_ronda()
 
-    # Turno de la máquina
+        # Turno de la máquina
     if turno_actual == "maquina" and ronda_activa:
-        pygame.time.delay(500)  # Simular un retraso para la jugada de la máquina
-        
-        # Verificar si es una nueva jugada o una respuesta
-        if not cartas_jugadas or cartas_jugadas[-1][1] is not None:  # No hay jugada incompleta
+        pygame.time.delay(500)  # Simula un retraso para la jugada de la máquina
+
+        # Si la máquina comienza la jugada
+        if not cartas_jugadas or cartas_jugadas[-1][0] is None:
             carta_maquina = mano_maquina.pop(0)  # La máquina juega su carta más alta disponible
-            cartas_jugadas.append((None, carta_maquina))  # La máquina comienza la jugada
+            cartas_jugadas.append((None, carta_maquina))  # Añade la jugada de la máquina como inicial
             print(f"La máquina jugó: {carta_maquina}")
-            turno_actual = "jugador"  # Cambia el turno al jugador para responder
-        elif cartas_jugadas[-1][0] is not None and cartas_jugadas[-1][1] is None:
-            # Responder a la jugada del jugador
+            turno_actual = "jugador"  # Cambia el turno al jugador para que responda
+
+        # Si la máquina responde a una jugada del jugador
+        elif cartas_jugadas[-1][1] is None:
             carta_jugador = cartas_jugadas[-1][0]
-            carta_maquina = jugar_maquina(mano_maquina, carta_jugador)  # Jugar en respuesta
+            carta_maquina = jugar_maquina(mano_maquina, carta_jugador)  # La máquina responde al jugador
             mano_maquina.remove(carta_maquina)
-            cartas_jugadas[-1] = (carta_jugador, carta_maquina)  # Completar la jugada
+            cartas_jugadas[-1] = (carta_jugador, carta_maquina)  # Completa la jugada actual
             print(f"La máquina jugó: {carta_maquina}")
 
             # Evaluar quién ganó la mano
@@ -111,22 +112,29 @@ while jugando:
             if ganador_mano == "jugador":
                 print("Ganaste esta mano.")
                 manos_ganadas["jugador"] += 1
-                turno_actual = "jugador"  # El jugador comienza la siguiente jugada
+                turno_actual = "jugador"  # El jugador sigue si gana
             elif ganador_mano == "maquina":
                 print("La máquina ganó esta mano.")
                 manos_ganadas["maquina"] += 1
-                turno_actual = "maquina"  # La máquina sigue jugando
+                turno_actual = "maquina"  # La máquina sigue si gana
             else:
                 print("Empate en esta mano.")
                 turno_actual = "jugador"  # Por defecto, turno al jugador en caso de empate
 
-            # Verificar si alguien ganó dos manos
-            if manos_ganadas["jugador"] == 2 or manos_ganadas["maquina"] == 2:
-                ronda_activa = False
-                puntos_jugador, puntos_maquina = determinar_ganador_final(
-                    puntos_jugador, puntos_maquina, cartas_jugadas, manos_ganadas, puntos_truco
-                )
-                reiniciar_ronda()
+        # Verificar si alguien ganó la ronda
+        if manos_ganadas["jugador"] == 2 or manos_ganadas["maquina"] == 2:
+            ronda_activa = False
+            puntos_jugador, puntos_maquina = determinar_ganador_final(
+                puntos_jugador, puntos_maquina, cartas_jugadas, manos_ganadas, puntos_truco
+            )
+            reiniciar_ronda()
+
+        # La máquina inicia una nueva jugada si no hay respuesta pendiente
+        elif not cartas_jugadas or cartas_jugadas[-1][1] is not None:
+            carta_maquina = mano_maquina.pop(0)  # La máquina juega su carta más alta disponible
+            cartas_jugadas.append((None, carta_maquina))  # La máquina comienza la jugada
+            print(f"La máquina jugó: {carta_maquina}")
+        turno_actual = "jugador"  # Cambia el turno al jugador
 
     # Dibujar fondo y elementos
     pantalla.blit(fondo, (0, 0))
