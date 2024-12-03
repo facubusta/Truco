@@ -2,9 +2,7 @@ import pygame
 from funciones.mazo import *
 from funciones.jugador import *
 from funciones.puntuacion import *
-from funciones.botones import Boton
-
-
+from funciones.botones import *
 
 def jugar_mano(mano_jugador: list, mano_maquina: list, valores_truco: dict) -> str:
     '''
@@ -164,7 +162,7 @@ def determinar_ganador_ronda(ganadores_manos: dict) -> str:
     else:
         return "empate"  # Si no se llegó a 2 manos ganadas por nadie
 
-def gestionar_truco_interfaz(pantalla, turno, puntos_jugador, puntos_maquina) -> tuple:
+def gestionar_truco_interfaz(pantalla: pygame.surface, turno: str, canto_actual: str, respuesta: bool) -> tuple:
     """
     Maneja la lógica del Truco, Re Truco y Vale Cuatro en la interfaz gráfica.
 
@@ -181,72 +179,76 @@ def gestionar_truco_interfaz(pantalla, turno, puntos_jugador, puntos_maquina) ->
     boton_aceptar = Boton(200, 500, 150, 50, "Aceptar")
     boton_subir = Boton(400, 500, 150, 50, "Subir")
     boton_rechazar = Boton(600, 500, 150, 50, "Rechazar")
-
+    terminar_canto = False
+    responde = ""
+    if turno == "jugador":
+        responde = "maquina"
     puntos_canto = {"Truco": 2, "Re Truco": 3, "Vale Cuatro": 4}
-    canto_actual = "Truco"
-    canto_terminado = False
-
-    while not canto_terminado:
+    if responde != "":
+        if canto_actual == "":
+            canto_actual = "Truco"
+        elif canto_actual == "Truco":
+            canto_actual = "Re Truco"
+        elif canto_actual == "Re Truco":
+            canto_actual = "Vale Cuatro"    
+    
+    while terminar_canto == False:
         for evento in pygame.event.get():
             if evento.type == pygame.QUIT:
                 pygame.quit()
-                return puntos_jugador, puntos_maquina, True
-
-        boton_aceptar.dibujar(pantalla)
-        boton_subir.dibujar(pantalla)
-        boton_rechazar.dibujar(pantalla)
+                return canto_actual, respuesta, turno
 
         pygame.display.flip()
 
-        if turno == "jugador":
+        if responde == "jugador":
+            boton_aceptar.dibujar(pantalla)
+            if canto_actual != "Vale Cuatro":
+                boton_subir.dibujar(pantalla)
+            boton_rechazar.dibujar(pantalla)
+
             if boton_aceptar.detectar_clic():
-                pygame.time.delay(500) 
-                print(f"¡cantaste {canto_actual}!")
-                turno = "maquina"
-                
+                pygame.time.delay(500)
+                respuesta = True
+                print(f"¡cantaste {canto_actual}!")             
             elif boton_subir.detectar_clic() and canto_actual != "Vale Cuatro":
                 pygame.time.delay(500)
-                canto_actual = {"Truco": "Re Truco", "Re Truco": "Vale Cuatro"}[canto_actual]
-                print(f"Subiste el canto a {canto_actual}.")
-                turno = "maquina"
+                respuesta = True
+                if canto_actual == "Truco":
+                    canto_actual = "Re Truco"
+                elif canto_actual == "Re Truco":
+                    canto_actual = "Vale Cuatro" 
             elif boton_rechazar.detectar_clic():
                 pygame.time.delay(500)
-                puntos_maquina += puntos_canto[canto_actual] - 1
-                print(f"Rechazaste el {canto_actual}. La máquina gana {puntos_canto[canto_actual] - 1} puntos.")
-                canto_terminado = True
-                return puntos_jugador, puntos_maquina
-
-        elif turno == "maquina":
+                print(f"Rechazaste el {canto_actual}.")
+                respuesta = False
+            turno = "jugador"  
+            terminar_canto = True
+        elif responde == "maquina":
             decision_maquina = "s" 
             print(f"¡La maquina acepto el {canto_actual}!")
-            turno = "jugador"
+            pygame.time.delay(500)
             if canto_actual == "Re Truco" and puntos_canto[canto_actual] > 0:
                 decision_maquina = "s"
-                turno = "jugador"
+                respuesta = True
             elif canto_actual == "Vale Cuatro":
                 decision_maquina = "s"
-                turno = "jugador"
+                respuesta = True
             else:
                 decision_maquina = "re" if canto_actual != "Vale Cuatro" else "n"
-                turno = "jugador"
 
-            if decision_maquina == "n":
-                puntos_jugador += puntos_canto[canto_actual] - 1
-                print(f"La máquina rechazó el {canto_actual}. Ganás {puntos_canto[canto_actual] - 1} puntos.")
-                canto_terminado = True
-                return puntos_jugador, puntos_maquina
-            
-            elif decision_maquina == "re":
-                canto_actual = {"Truco": "Re Truco", "Re Truco": "Vale Cuatro"}[canto_actual]
-                print(f"La máquina cantó {canto_actual}.")
-                turno = "jugador"
-            elif decision_maquina == "s":
-                print(f"La máquina aceptó el {canto_actual}.")
-                turno = "jugador"
+            if decision_maquina == "n":               
+                print(f"La máquina rechazó el {canto_actual}.")
+                respuesta = False
+            else:
+                respuesta = True
+            terminar_canto = True
+            turno = "maquina"
+        else:
+            terminar_canto = True
 
-    return puntos_jugador, puntos_maquina, False
+    return canto_actual, respuesta, turno
 
-def turno_maquina(mano_maquina: list, cartas_jugadas: list, valores_truco: dict, turno_actual: str, manos_ganadas: dict) -> str:
+'''def turno_maquina(mano_maquina: list, cartas_jugadas: list, valores_truco: dict, turno_actual: str, manos_ganadas: dict) -> str:
     if turno_actual == "maquina" and mano_maquina:
         pygame.time.delay(500)  # Retraso para simular el turno
         carta_maquina = jugar_maquina(mano_maquina)
@@ -274,7 +276,7 @@ def turno_maquina(mano_maquina: list, cartas_jugadas: list, valores_truco: dict,
             print("Se ganaron dos manos. Fin de la ronda.")
             return "fin_ronda"
 
-    return turno_actual
+    return turno_actual'''
 
 def determinar_ganador_final(puntos_jugador: int, puntos_maquina: int, ganador_primera: str, manos_ganadas: dict,
                              puntos_truco: int) -> tuple:
@@ -339,14 +341,8 @@ def reiniciar_ronda(mazo: list, mano_jugador: list, mano_maquina: list, cartas_j
 
     pygame.time.delay(500)  # Dar un pequeño tiempo de espera para iniciar la nueva ronda
 
-def manejar_turno_maquina(
-    mano_maquina: list, 
-    cartas_jugadas: list, 
-    valores_truco: dict, 
-    turno_actual: str, 
-    manos_ganadas: dict,
-    cartas_maquina: list
-) -> str:
+'''def manejar_turno_maquina(mano_maquina: list, cartas_jugadas: list, valores_truco: dict, turno_actual: str,
+                           manos_ganadas: dict, cartas_maquina: list) -> str:
     """
     Maneja el turno de la máquina, ya sea iniciando la jugada o respondiendo.
     """
@@ -379,4 +375,4 @@ def manejar_turno_maquina(
             print("Empate en esta mano.")
             return "jugador"  # Por defecto, turno pasa al jugador en caso de empate
 
-    return turno_actual  # Mantener turno si no se cumplió ninguna condición
+    return turno_actual  # Mantener turno si no se cumplió ninguna condición'''

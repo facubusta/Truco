@@ -64,7 +64,7 @@ def mostrar_cartas(pantalla: pygame.Surface, mano: list, imagenes: dict, y: int,
     carta_seleccionada = None
 
     for carta in mano:
-        carta_rect = pygame.Rect(x, y, 100, 150)  # Area de la carta
+        carta_rect = pygame.Rect(x, y, 99, 160)  # Area de la carta
         
         if es_jugador:
             pantalla.blit(imagenes[carta], (x, y)) 
@@ -73,7 +73,7 @@ def mostrar_cartas(pantalla: pygame.Surface, mano: list, imagenes: dict, y: int,
 
         # Detectar clic
         if es_jugador and carta_rect.collidepoint(pygame.mouse.get_pos()):
-            pygame.draw.rect(pantalla, (255, 0, 0), carta_rect, 3)  # Resaltar la carta con un borde rojo
+            pygame.draw.rect(pantalla, (255, 0, 0), carta_rect, 2)  # Resaltar la carta con un borde rojo
             if pygame.mouse.get_pressed()[0]:  # Si se hace clic con el botón izquierdo
                 carta_seleccionada = carta
 

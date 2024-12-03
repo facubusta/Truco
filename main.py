@@ -3,6 +3,7 @@ from funciones.mazo import *
 from funciones.botones import *
 from funciones.puntuacion import *
 from funciones.juego import *
+from funciones.paletas_colores import *
 
 # Inicialización de pygame
 pygame.init()
@@ -11,6 +12,18 @@ pygame.init()
 ancho, alto = 800, 600
 pantalla = pygame.display.set_mode((ancho, alto))
 pygame.display.set_caption("Truco Argentino")
+
+fondo_menu = pygame.image.load("Truco\\truco\\imagenes\\cartas\\menu.jpg")
+fondo_menu = pygame.transform.smoothscale(fondo_menu, (ancho, alto))
+
+# Mostrar el menú principal
+mostrar_menu_principal(pantalla, fondo_menu)
+
+# Llamar a la función al inicio del juego
+nombre = pedir_nombre(pantalla, ancho, alto)
+
+# Selección de puntos antes de iniciar el juego
+seleccion = seleccionar_puntos(pantalla, ancho, alto)
 
 # Cargar la imagen de fondo
 fondo = pygame.image.load("Truco\\Truco\\imagenes\\cartas\\bg.jpg")
@@ -21,9 +34,9 @@ mazo, rutas_imagenes, valores_truco = crear_mazo()
 imagenes_cartas = cargar_imagenes_cartas(rutas_imagenes)
 mano_jugador, mano_maquina = repartir_cartas(mazo)
 
-boton_truco = Boton(200, 550, 200, 30, "Truco")
-boton_envido = Boton(400, 550, 200, 30, "Envido")
-boton_mazo = Boton(600, 550, 200, 30, "Irse al Mazo")
+boton_truco = Boton(100, 550, 200, 30, "Truco")
+boton_envido = Boton(300, 550, 200, 30, "Envido")
+boton_mazo = Boton(500, 550, 200, 30, "Mazo")
 
 puntos_jugador, puntos_maquina = 0, 0
 jugando = True
@@ -38,6 +51,9 @@ cartas_maquina = []
 inicio_ronda = True
 empate = 0
 ganador_primera = ""
+canto_actual = ""
+respuesta = False
+turno_truco = "jugador"
 
 # Bucle principal
 while jugando:
@@ -87,16 +103,8 @@ while jugando:
     if manos_ganadas["jugador"] == 2 or manos_ganadas["maquina"] == 2 or (empate > 0 and (manos_ganadas["jugador"] == 1 or manos_ganadas["maquina"] == 1)):
         ronda_activa = False
         puntos_jugador, puntos_maquina = determinar_ganador_final(
-            puntos_jugador, puntos_maquina, ganador_primera, manos_ganadas, puntos_truco
-        )
-        reiniciar_ronda(
-            mazo,
-            mano_jugador,
-            mano_maquina,
-            cartas_jugadas,
-            manos_ganadas,
-            inicia_ronda
-        )
+        puntos_jugador, puntos_maquina, ganador_primera, manos_ganadas, puntos_truco)
+        reiniciar_ronda(mazo, mano_jugador, mano_maquina, cartas_jugadas, manos_ganadas, inicia_ronda)
         inicio_ronda = True
         inicia_ronda = "maquina" if inicia_ronda == "jugador" else "jugador"
         turno_actual = inicia_ronda
@@ -131,33 +139,41 @@ while jugando:
     # Detectar clic en el botón Truco
     if boton_truco.detectar_clic() and turno_actual == "jugador":
         print("Botón Truco presionado")
-        puntos_jugador, puntos_maquina, truco_terminado = gestionar_truco_interfaz(pantalla, turno_actual, puntos_jugador, puntos_maquina)
-        if truco_terminado:
+        canto_actual, respuesta, turno_truco = gestionar_truco_interfaz(pantalla, turno_truco, canto_actual, respuesta)
+
+        '''if truco_terminado:
             print(f"El Truco fue resuelto. Puntos actuales - jugador: {puntos_jugador}, maquina: {puntos_maquina}.")
             inicio_ronda = True
             inicia_ronda = "maquina" if inicia_ronda == "jugador" else "jugador"
             turno_actual = inicia_ronda
             ronda_activa = True
             envido_jugado = False
-            empate = 0  
+            empate = 0 ''' 
 
     # Detectar clic en el botón Mazo
     if boton_mazo.detectar_clic() and ronda_activa:
         print("Clic en el botón Mazo detectado")
         ronda_activa = False
-        if turno_actual == "jugador":
+        if turno_actual == "jugador" and envido_jugado == True:
+            print("Te fuiste al mazo. La máquina gana 1 punto.")
+            puntos_maquina += 1
+        elif turno_actual == "jugador" and inicio_ronda == False:
+            print("Te fuiste al mazo. La máquina gana 1 punto.")
+            puntos_maquina += 1
+        elif turno_actual == "jugador" and envido_jugado == False:
             print("Te fuiste al mazo. La máquina gana 2 puntos.")
             puntos_maquina += 2
+        elif turno_actual == "maquina" and envido_jugado == True:
+            print("La máquina se fue al mazo. Sumás 1 punto.")
+            puntos_jugador += 1
+        elif turno_actual == "maquina" and inicio_ronda == False:
+            print("La máquina se fue al mazo. Sumás 1 punto.")
+            puntos_jugador += 1
         else:
             print("La máquina se fue al mazo. Sumás 2 puntos.")
-        reiniciar_ronda(
-            mazo,
-            mano_jugador,
-            mano_maquina,
-            cartas_jugadas,
-            manos_ganadas,
-            inicia_ronda
-        )
+            puntos_jugador += 1
+
+        reiniciar_ronda(mazo, mano_jugador, mano_maquina, cartas_jugadas, manos_ganadas, inicia_ronda)
         inicio_ronda = True
         inicia_ronda = "maquina" if inicia_ronda == "jugador" else "jugador"
         turno_actual = inicia_ronda
@@ -166,15 +182,16 @@ while jugando:
         empate = 0
 
     # Verificar fin del juego
-    if puntos_jugador >= 15 or puntos_maquina >= 15:
+    if puntos_jugador >= seleccion or puntos_maquina >= seleccion:
         print("¡Juego finalizado!")
-        if puntos_jugador >= 15:
+        if puntos_jugador >= seleccion:
             print("¡Ganaste la partida!")
+            guardar_puntaje(nombre, 1)
         else:
             print("La máquina ganó la partida.")
         jugando = False
 
-    # Actualizar pantalla
+    # Actualizar pantal
     pygame.display.flip()
 
 pygame.quit()

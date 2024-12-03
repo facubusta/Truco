@@ -1,4 +1,3 @@
-
 def Calcular_envido(mano: list) -> int:
     """
     Calcula los puntos de Envido en la mano de un jugador según las reglas del Truco.
@@ -61,7 +60,7 @@ def decidir_canto_maquina(mano: list, tipo: str) -> str:
     '''
     if tipo == "envido":
         puntos_envido = Calcular_envido(mano)
-        if puntos_envido > 27:  
+        if puntos_envido > 25:  
             return "s"
         return "n"
     elif tipo == "truco":
