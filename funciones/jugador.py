@@ -1,5 +1,3 @@
-carta = ()
-from funciones.juego import *
 
 def Calcular_envido(mano: list) -> int:
     """
@@ -63,7 +61,7 @@ def decidir_canto_maquina(mano: list, tipo: str) -> str:
     '''
     if tipo == "envido":
         puntos_envido = Calcular_envido(mano)
-        if puntos_envido > 21:  
+        if puntos_envido > 27:  
             return "s"
         return "n"
     elif tipo == "truco":
@@ -73,6 +71,7 @@ def turno_maquina(mano_maquina: list, cartas_jugadas: list, valores_truco: dict,
     """
     Maneja el turno de la máquina y actualiza los estados necesarios.
     """
+    from funciones.juego import evaluar_mano
     if turno_actual == "maquina" and mano_maquina:
         carta_maquina = jugar_maquina(mano_maquina)
         mano_maquina.remove(carta_maquina)

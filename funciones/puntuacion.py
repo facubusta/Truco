@@ -27,6 +27,8 @@ def calcular_puntos_envido(tipo_envido: str, puntos_jugador: int = 0, maquina_pu
         return 2
     elif tipo_envido == "envido envido":
         return 4
+    elif tipo_envido == "envido envido no querido":
+        return 3 
     elif tipo_envido == "real envido":
         return 5
     elif tipo_envido == "envido envido real envido":
@@ -49,23 +51,3 @@ def mostrar_puntajes(pantalla: pygame.Surface, puntos_jugador: int, puntos_maqui
     texto_maquina = fuente.render(f"Máquina: {puntos_maquina}", True, MENTA)
     pantalla.blit(texto_jugador, (50, 20))  # Posición del texto del jugador
     pantalla.blit(texto_maquina, (50, 60))  # Posición del texto de la máquina
-
-def actualizar_puntajes(puntos_jugador: int, puntos_maquina: int, ganador: str, tipo: str) -> tuple:
-    '''
-    Actualiza los puntajes después de cada ronda
-    '''
-    puntos_a_sumar = {
-        "truco": 1,
-        "retruco": 3,
-        "vale cuatro": 4,
-        "envido": 2,
-        "envido no querido": 1
-                         }.get(tipo, 0)
-
-    if ganador == "jugador":
-        puntos_jugador += puntos_a_sumar
-    elif ganador == "maquina":
-        puntos_maquina += puntos_a_sumar
-
-    return puntos_jugador, puntos_maquina
-
