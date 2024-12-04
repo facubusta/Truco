@@ -54,18 +54,6 @@ def jugar_maquina(mano: list, carta_jugada: tuple = None) -> tuple:
     # Si no puede superar la carta jugada, juega la más baja
     return mano_ordenada[-1]
 
-def decidir_canto_maquina(mano: list, tipo: str) -> str:
-    '''
-    Decide si la máquina canta o acepta un canto (envido o truco).
-    '''
-    if tipo == "envido":
-        puntos_envido = Calcular_envido(mano)
-        if puntos_envido > 25:  
-            return "s"
-        return "n"
-    elif tipo == "truco":
-        return "s"
-    
 def turno_maquina(mano_maquina: list, cartas_jugadas: list, valores_truco: dict, turno_actual: str, manos_ganadas: dict) -> str:
     """
     Maneja el turno de la máquina y actualiza los estados necesarios.
@@ -92,3 +80,63 @@ def turno_maquina(mano_maquina: list, cartas_jugadas: list, valores_truco: dict,
             print("Empate en esta mano.")
             return "jugador"  # En caso de empate, el jugador sigue
     return turno_actual
+
+def turno_maquina_canto(canto_actual: str, turno: str, puntos_canto: dict, puntos_jugador: int, puntos_maquina: int, mano_maquina: list) -> tuple:
+    """
+    Lógica estratégica para el canto de la máquina.
+
+    Parámetros:
+        canto_actual (str): El canto actual ("Truco", "Re Truco", "Vale Cuatro").
+        turno (str): Turno actual ("jugador" o "maquina").
+        puntos_canto (dict): Puntos asociados a cada canto.
+        puntos_jugador (int): Puntos actuales del jugador.
+        puntos_maquina (int): Puntos actuales de la máquina.
+        mano_maquina (list): Cartas en mano de la máquina.
+
+    Retorno:
+        tuple: (turno, canto_actual, respuesta).
+    """
+    # Evaluar fuerza de la mano de la máquina
+    fuerza_mano = sum(carta[0] for carta in mano_maquina if carta[0] <= 7)  # Considerar solo cartas válidas
+    fuerza_promedio = fuerza_mano / len(mano_maquina) if mano_maquina else 0
+
+    decision_maquina = "s"  # Por defecto, acepta
+    print(f"La máquina está evaluando el {canto_actual}...")
+
+    # Evaluar probabilidad de aceptación basada en puntos y fuerza de la mano
+    if puntos_maquina >= 12 and puntos_jugador < 12:
+        # La máquina será más conservadora si está ganando
+        if fuerza_promedio < 5 or canto_actual == "Vale Cuatro":
+            decision_maquina = "n"
+    elif puntos_jugador >= 12 and puntos_maquina < 12:
+        # La máquina será más agresiva si está perdiendo
+        if fuerza_promedio > 5 and canto_actual != "Vale Cuatro":
+            decision_maquina = "re"
+    else:
+        # Evaluación estándar
+        if fuerza_promedio < 4 and canto_actual == "Re Truco":
+            decision_maquina = "n"
+        elif fuerza_promedio > 6 and canto_actual == "Truco":
+            decision_maquina = "re"
+
+    # Decisiones basadas en el canto actual
+    if canto_actual == "Vale Cuatro":
+        # Si es "Vale Cuatro", la máquina evalúa más conservadoramente
+        decision_maquina = "n" if fuerza_promedio < 5 else "s"
+
+    # Procesar la decisión
+    if decision_maquina == "n":
+        print(f"La máquina rechazó el {canto_actual}.")
+        return turno, canto_actual, False
+    elif decision_maquina == "re":
+        # La máquina sube el canto
+        print(f"La máquina cantó {canto_actual}.")
+        if canto_actual == "Truco":
+            canto_actual = "Re Truco"
+        elif canto_actual == "Re Truco":
+            canto_actual = "Vale Cuatro"
+        return "jugador", canto_actual, True
+    else:
+        # La máquina acepta
+        print(f"La máquina aceptó el {canto_actual}.")
+        return "jugador", canto_actual, True

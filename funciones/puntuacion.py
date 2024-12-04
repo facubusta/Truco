@@ -4,18 +4,6 @@ import os
 from funciones.paletas_colores import *
 from funciones.botones import *
 
-def calcular_puntos_truco(ganador_truco: str) -> int:
-    '''
-    Calcula los puntos del truco obtenidos en una mano
-    '''
-    if ganador_truco == "truco":
-        return 2
-    elif ganador_truco == "retruco":
-        return 3
-    elif ganador_truco == "vale cuatro":
-        return 4
-    return 1
-
 def calcular_puntos_envido(tipo_envido: str, puntos_jugador: int = 0, maquina_puntos: int = 0,
                             puntos_victoria: int = 30) -> int:
     '''
@@ -24,9 +12,9 @@ def calcular_puntos_envido(tipo_envido: str, puntos_jugador: int = 0, maquina_pu
     '''
 
 
-    if tipo_envido == "envido no querido":
+    if tipo_envido == "envido no":
         return 1
-    elif tipo_envido == "envido ganado":
+    elif tipo_envido == "envido":
         return 2
     elif tipo_envido == "envido envido":
         return 4

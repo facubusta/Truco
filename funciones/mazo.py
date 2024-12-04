@@ -81,18 +81,41 @@ def mostrar_cartas(pantalla: pygame.Surface, mano: list, imagenes: dict, y: int,
 
     return carta_seleccionada
 
-def arrastrar_carta(pantalla: pygame.Surface, carta_seleccionada: str, imagenes: dict, y: int) -> None:
-    '''
-    Permite al jugador arrastrar la carta seleccionada a una nueva posición.
-    '''
-    x, y_pos = pygame.mouse.get_pos()  # Obtener la posición del ratón
+def arrastrar_carta(pantalla: pygame.Surface, carta_seleccionada: tuple, imagenes: dict, posicion_final: tuple) -> None:
+    """
+    Permite al jugador arrastrar una carta al centro de la pantalla.
 
-    # Dibujar la carta en la nueva posición del ratón
-    pantalla.blit(imagenes[carta_seleccionada], (x - 50, y_pos - 75))  # Ajusta la posición para centrar la carta al clic
+    Parámetros:
+        pantalla (pygame.Surface): La superficie donde se dibuja la carta.
+        carta_seleccionada (tuple): La carta seleccionada por el jugador.
+        imagenes (dict): Diccionario con las imágenes de las cartas.
+        posicion_final (tuple): Coordenadas finales donde se colocará la carta.
+    """
+    x, y = pygame.mouse.get_pos()  # Posición actual del ratón
 
-def mostrar_ganador(pantalla: pygame.Surface, carta_ganadora: str, imagenes: dict, x: int, y: int) -> None:
-    '''
-    Muestra la carta ganadora encima de la carta perdedora.
-    '''
-    pantalla.blit(imagenes[carta_ganadora], (x, y))  # Muestra la carta ganadora encima
+    # Dibujar la carta mientras se arrastra
+    pantalla.fill((0, 128, 0))  # Fondo
+    pantalla.blit(imagenes[carta_seleccionada], (x - 50, y - 75))  # Ajustar para centrar la carta
+    pygame.display.flip()
+
+    # Esperar a que el jugador suelte la carta en la posición final
+    while True:
+        for evento in pygame.event.get():
+            if evento.type == pygame.MOUSEBUTTONUP:  # Al soltar el botón del mouse
+                pantalla.blit(imagenes[carta_seleccionada], posicion_final)  # Dibujar en la posición final
+                pygame.display.flip()
+                return
+
+def mostrar_ganador(pantalla: pygame.Surface, carta_ganadora: tuple, imagenes: dict, posicion: tuple) -> None:
+    """
+    Muestra la carta ganadora en el centro de la pantalla.
+
+    Parámetros:
+        pantalla (pygame.Surface): La superficie donde se dibuja la carta.
+        carta_ganadora (tuple): La carta ganadora.
+        imagenes (dict): Diccionario con las imágenes de las cartas.
+        posicion (tuple): Coordenadas donde se mostrará la carta ganadora.
+    """
+    pantalla.blit(imagenes[carta_ganadora], posicion)  # Dibujar la carta ganadora en la posición
+    pygame.display.flip()
 

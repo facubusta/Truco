@@ -31,3 +31,39 @@ class Boton:
         if self.rect.collidepoint(pygame.mouse.get_pos()) and pygame.mouse.get_pressed()[0]:
             return True
         return False
+    
+def manejar_irse_al_mazo(turno_actual: str, envido_jugado: bool, inicio_ronda: bool, puntos_jugador: int,
+                          puntos_maquina: int) -> tuple:
+    """
+    Maneja la lógica de "irse al mazo" y actualiza los puntajes.
+
+    Parámetros:
+        turno_actual (str): Quién está en turno ("jugador" o "maquina").
+        envido_jugado (bool): Si el envido ya fue jugado.
+        inicio_ronda (bool): Si la ronda fue iniciada por la máquina o el jugador.
+        puntos_jugador (int): Puntaje actual del jugador.
+        puntos_maquina (int): Puntaje actual de la máquina.
+
+    Retorno:
+        tuple: (puntos_jugador, puntos_maquina).
+    """
+    if turno_actual == "jugador" and envido_jugado:
+        print("Te fuiste al mazo. La máquina gana 1 punto.")
+        puntos_maquina += 1
+    elif turno_actual == "jugador" and not inicio_ronda:
+        print("Te fuiste al mazo. La máquina gana 1 punto.")
+        puntos_maquina += 1
+    elif turno_actual == "jugador" and not envido_jugado:
+        print("Te fuiste al mazo. La máquina gana 2 puntos.")
+        puntos_maquina += 2
+    elif turno_actual == "maquina" and envido_jugado:
+        print("La máquina se fue al mazo. Sumás 1 punto.")
+        puntos_jugador += 1
+    elif turno_actual == "maquina" and not inicio_ronda:
+        print("La máquina se fue al mazo. Sumás 1 punto.")
+        puntos_jugador += 1
+    else:
+        print("La máquina se fue al mazo. Sumás 2 puntos.")
+        puntos_jugador += 2
+
+    return puntos_jugador, puntos_maquina

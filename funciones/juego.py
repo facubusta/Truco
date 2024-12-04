@@ -4,123 +4,91 @@ from funciones.jugador import *
 from funciones.puntuacion import *
 from funciones.botones import *
 
-def jugar_mano(mano_jugador: list, mano_maquina: list, valores_truco: dict) -> str:
-    '''
-    Juega una mano completa de truco con 3 rondas y determina el ganador según las reglas del juego.
-    '''
-    resultados_rondas = []  # Guarda el resultado de cada ronda ("jugador", "maquina", "empate")
-    
-    for ronda in range(3):
-        print(f"\nRonda {ronda + 1}:\n")
-        
-        # Mostrar las cartas disponibles del jugador
-        print("Tus cartas:")
-        for i, carta in enumerate(mano_jugador):
-            print(f"{i + 1}: {carta}")
-        
-        # Jugador selecciona su carta
-        carta_jugador = None
-        while carta_jugador is None:
-            try:
-                seleccion = int(input("Seleccioná una carta para jugar (1, 2, o 3): "))
-                if 1 <= seleccion <= len(mano_jugador):
-                    carta_jugador = mano_jugador.pop(seleccion - 1)
-                else:
-                    print("Selección inválida. Elegí un número válido.")
-            except ValueError:
-                print("Entrada inválida. Ingresá un número.")
-        
-        # Máquina selecciona su carta
-        carta_maquina = jugar_maquina(mano_maquina, carta_jugador)
-        mano_maquina.remove(carta_maquina)
-        
-        # Comparar valores según el diccionario del truco
-        valor_jugador = valores_truco[carta_jugador]
-        valor_maquina = valores_truco[carta_maquina]
-        
-        if valor_jugador > valor_maquina:
-            resultados_rondas.append("jugador")
-        elif valor_maquina > valor_jugador:
-            resultados_rondas.append("maquina")
-        else:
-            resultados_rondas.append("empate")
-        
-        print(f"El jugador jugó: {carta_jugador} (valor: {valor_jugador})")
-        print(f"La máquina jugó: {carta_maquina} (valor: {valor_maquina})")
-        print(f"Ganador de la ronda: {resultados_rondas[-1]}")
-    
-    # Determinar el ganador de la mano según las reglas
-    if resultados_rondas[0] == "jugador":
-        if resultados_rondas[1] == "maquina" and resultados_rondas[2] == "empate":
-            return "jugador"
-    elif resultados_rondas[0] == "maquina":
-        if resultados_rondas[1] == "jugador" and resultados_rondas[2] == "empate":
-            return "maquina"
-    
-    # Contar rondas ganadas
-    jugador_gana = resultados_rondas.count("jugador")
-    maquina_gana = resultados_rondas.count("maquina")
-    
-    if jugador_gana > maquina_gana:
-        return "jugador"
-    elif maquina_gana > jugador_gana:
-        return "maquina"
-    else:
-        return "empate"  # En caso de empate en rondas
+def manejar_envido_completo(puntos_jugador: int, puntos_maquina: int, mano_jugador: list, mano_maquina: list, turno_actual: str, seleccion : int) -> tuple:
+    """
+    Maneja el flujo completo del Envido, incluyendo variantes como "Real Envido" y "Falta Envido".
 
-def manejar_envido(puntos_jugador: int, puntos_maquina: int, mano_jugador: list, mano_maquina: list) -> tuple:
-    '''
-    Maneja el flujo del canto de envido y determina al ganador.
-    '''
-    envido_jugador = Calcular_envido(mano_jugador)
-    envido_maquina = Calcular_envido(mano_maquina)
-    print(f"Tus puntos: {envido_jugador}")
+    Parámetros:
+        puntos_jugador (int): Puntos actuales del jugador.
+        puntos_maquina (int): Puntos actuales de la máquina.
+        mano_jugador (list): Mano del jugador.
+        mano_maquina (list): Mano de la máquina.
+        turno_actual (str): Quién inicia el canto ("jugador" o "maquina").
 
-    # Máquina decide si acepta, sube o rechaza
-    if envido_maquina > 20:
-        respuesta_maquina = "s" if envido_maquina >= envido_jugador else "real"  # Máquina sube si tiene más puntos
-    else:
-        respuesta_maquina = "n"
+    Retorno:
+        tuple: (puntos_jugador_actualizados, puntos_maquina_actualizados, envido_terminado)
+    """
+    puntos_envido_jugador = Calcular_envido(mano_jugador)
+    puntos_envido_maquina = Calcular_envido(mano_maquina)
 
-    if respuesta_maquina == "n":
-        puntos_jugador += calcular_puntos_envido("envido no querido")
-        print("La máquina rechazó el Envido. Sumás 1 punto.")
-        return puntos_jugador, puntos_maquina
-    elif respuesta_maquina in ["real", "falta"]:
-        print(f"La máquina cantó {respuesta_maquina.capitalize()} Envido.")
-        print(f"¿Aceptás, subís o rechazás? (s/{respuesta_maquina}/n)")
-        decision = input().strip().lower()
+    print(f"Tus puntos de Envido: {puntos_envido_jugador}")
+    print(f"Puntos de Envido de la máquina: {puntos_envido_maquina}")
 
-        if decision == "n":
-            puntos_maquina += calcular_puntos_envido("envido no querido")
-            print("Rechazaste el Envido. La máquina suma 1 punto.")
-            return puntos_jugador, puntos_maquina
-        elif decision == "real":
-            print("¡Aceptaste el Real Envido!")
-            puntos_jugador += calcular_puntos_envido("real envido")
-        elif decision == "falta":
-            print("¡Aceptaste la Falta Envido!")
-            puntos_ganados = calcular_puntos_envido("falta envido", puntos_jugador, puntos_maquina)
-            if envido_jugador > envido_maquina:
-                puntos_jugador += puntos_ganados
+    opciones_envido = ["envido", "envido envido", "real envido", "falta envido"]
+    valores_envido = {"envido": 2, "envido envido": 4, "real envido": 5, "falta envido": 0}
+    valores_rechazados = {"envido": 1, "envido envido": 2, "real envido": 5, "falta envido": 1}
+
+    # Determina los puntos faltantes para "Falta Envido"
+    puntos_faltantes_jugador = seleccion - puntos_jugador
+    puntos_faltantes_maquina = seleccion - puntos_maquina
+    valores_envido["falta envido"] = max(puntos_faltantes_jugador, puntos_faltantes_maquina)
+
+    envido_terminado = False
+    canto_actual = ""
+    respuesta = True
+
+    # Ciclo para manejar el canto y respuesta del Envido
+    while not envido_terminado:
+        if turno_actual == "jugador":
+            print("Opciones disponibles: Envido, Real Envido, Falta Envido")
+            canto_jugador = input("¿Qué querés cantar? (envido/real envido/falta envido/n): ").strip().lower()
+
+            if canto_jugador == "n":
+                print("Decidiste no cantar más. La máquina puede responder.")
+                turno_actual = "maquina"
+            elif canto_jugador in opciones_envido:
+                print(f"Cantaste {canto_jugador}.")
+                canto_actual = canto_jugador
+                turno_actual = "maquina"
             else:
-                puntos_maquina += puntos_ganados
-            return puntos_jugador, puntos_maquina
+                print("Canto inválido. Intentá nuevamente.")
+        elif turno_actual == "maquina":
+            # Estrategia básica de la máquina
+            if puntos_envido_maquina > 27:
+                respuesta_maquina = "s"  # Acepta
+            else:
+                respuesta_maquina = "n"  # Rechaza
 
-    # Comparar puntos del Envido
-    if envido_jugador > envido_maquina:
-        print(f"Tus puntos: {envido_jugador}, Máquina: {envido_maquina}")
-        print("Ganaste el Envido.")
-        puntos_jugador += calcular_puntos_envido("envido ganado")
-    elif envido_jugador < envido_maquina:
-        print(f"Tus puntos: {envido_jugador}, Máquina: {envido_maquina}")
-        print("La máquina ganó el Envido.")
-        puntos_maquina += calcular_puntos_envido("envido ganado")
-    else:
-        print(f"Tus puntos: {envido_jugador}, Máquina: {envido_maquina}")
-        print("Empate en el Envido. No suman puntos.")
-    return puntos_jugador, puntos_maquina
+            if respuesta_maquina == "s":
+                print(f"La máquina aceptó el {canto_actual}.")
+                if canto_actual == "falta envido":
+                    ganador = "jugador" if puntos_envido_jugador > puntos_envido_maquina else "maquina"
+                    puntos_ganados = valores_envido[canto_actual]
+                    if ganador == "jugador":
+                        puntos_jugador += puntos_ganados
+                        print(f"Ganaste la falta envido y sumás {puntos_ganados} puntos.")
+                    else:
+                        puntos_maquina += puntos_ganados
+                        print(f"La máquina ganó la falta envido y suma {puntos_ganados} puntos.")
+                else:
+                    ganador = "jugador" if puntos_envido_jugador > puntos_envido_maquina else "maquina"
+                    puntos_ganados = valores_envido[canto_actual]
+                    if ganador == "jugador":
+                        puntos_jugador += puntos_ganados
+                        print(f"Ganaste el {canto_actual} y sumás {puntos_ganados} puntos.")
+                    else:
+                        puntos_maquina += puntos_ganados
+                        print(f"La máquina ganó el {canto_actual} y suma {puntos_ganados} puntos.")
 
+                envido_terminado = True
+            elif respuesta_maquina == "n":
+                print(f"La máquina rechazó el {canto_actual}.")
+                puntos_jugador += valores_rechazados[canto_actual]
+                print(f"Sumás {valores_rechazados[canto_actual] - 1} puntos.")
+                envido_terminado = True
+
+    return puntos_jugador, puntos_maquina, envido_terminado
+    
 def evaluar_mano(cartas: tuple, valores_truco: dict) -> str:
     """
     Evalúa quién gana una mano según las cartas jugadas y sus valores.
@@ -248,36 +216,6 @@ def gestionar_truco_interfaz(pantalla: pygame.surface, turno: str, canto_actual:
 
     return canto_actual, respuesta, turno
 
-'''def turno_maquina(mano_maquina: list, cartas_jugadas: list, valores_truco: dict, turno_actual: str, manos_ganadas: dict) -> str:
-    if turno_actual == "maquina" and mano_maquina:
-        pygame.time.delay(500)  # Retraso para simular el turno
-        carta_maquina = jugar_maquina(mano_maquina)
-        mano_maquina.remove(carta_maquina)
-        carta_jugador = cartas_jugadas[-1][0] if cartas_jugadas else None
-        cartas_jugadas.append((carta_jugador, carta_maquina))
-        print(f"La máquina jugó: {carta_maquina}")
-
-        # Evaluar quién ganó la mano
-        ganador_mano = evaluar_mano(cartas_jugadas[-1], valores_truco)
-        if ganador_mano == "jugador":
-            print("Ganaste esta mano.")
-            manos_ganadas["jugador"] += 1
-            return "jugador"
-        elif ganador_mano == "maquina":
-            print("La máquina ganó esta mano.")
-            manos_ganadas["maquina"] += 1
-            return "maquina"
-        else:
-            print("Empate en esta mano.")
-            return "jugador"
-
-        # Verificar si alguien ganó dos manos
-        if manos_ganadas["jugador"] == 2 or manos_ganadas["maquina"] == 2:
-            print("Se ganaron dos manos. Fin de la ronda.")
-            return "fin_ronda"
-
-    return turno_actual'''
-
 def determinar_ganador_final(puntos_jugador: int, puntos_maquina: int, ganador_primera: str, manos_ganadas: dict,
                              puntos_truco: int) -> tuple:
     """
@@ -341,7 +279,7 @@ def reiniciar_ronda(mazo: list, mano_jugador: list, mano_maquina: list, cartas_j
 
     pygame.time.delay(500)  # Dar un pequeño tiempo de espera para iniciar la nueva ronda
 
-'''def manejar_turno_maquina(mano_maquina: list, cartas_jugadas: list, valores_truco: dict, turno_actual: str,
+def manejar_turno_maquina(mano_maquina: list, cartas_jugadas: list, valores_truco: dict, turno_actual: str,
                            manos_ganadas: dict, cartas_maquina: list) -> str:
     """
     Maneja el turno de la máquina, ya sea iniciando la jugada o respondiendo.
@@ -375,4 +313,4 @@ def reiniciar_ronda(mazo: list, mano_jugador: list, mano_maquina: list, cartas_j
             print("Empate en esta mano.")
             return "jugador"  # Por defecto, turno pasa al jugador en caso de empate
 
-    return turno_actual  # Mantener turno si no se cumplió ninguna condición'''
+    return turno_actual  # Mantener turno si no se cumplió ninguna condición
