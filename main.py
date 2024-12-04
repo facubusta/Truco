@@ -162,16 +162,7 @@ while jugando:
         print("Botón Truco presionado")
         canto_actual, respuesta, turno_truco = gestionar_truco_interfaz(pantalla, turno_truco, canto_actual, respuesta)
 
-        '''if truco_terminado:
-            print(f"El Truco fue resuelto. Puntos actuales - jugador: {puntos_jugador}, maquina: {puntos_maquina}.")
-            inicio_ronda = True
-            inicia_ronda = "maquina" if inicia_ronda == "jugador" else "jugador"
-            turno_actual = inicia_ronda
-            ronda_activa = True
-            envido_jugado = False
-            empate = 0 ''' 
-
-    # Detectar clic en el botón Mazo
+   # Detectar clic en el botón Mazo
     if boton_mazo.detectar_clic() and ronda_activa:
         print("Clic en el botón Mazo detectado")
         ronda_activa = False
@@ -191,8 +182,10 @@ while jugando:
         if puntos_jugador >= seleccion:
             print("¡Ganaste la partida!")
             guardar_puntaje(nombre, 1)
+            mostrar_resultado_final(pantalla, fondo, "Truco\\truco\\imagenes\\cartas\\ganaste.jpg", "¡Ganaste!", ROJO)
         else:
             print("La máquina ganó la partida.")
+            mostrar_resultado_final(pantalla, fondo, "Truco\\truco\\imagenes\\cartas\\perdiste.jpg", "¡Perdiste!", AZUL)
         jugando = False
 
     # Actualizar pantal

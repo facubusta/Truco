@@ -84,7 +84,7 @@ def manejar_envido_completo(puntos_jugador: int, puntos_maquina: int, mano_jugad
             elif respuesta_maquina == "n":
                 print(f"La máquina rechazó el {canto_actual}.")
                 puntos_jugador += valores_rechazados[canto_actual]
-                print(f"Sumás {valores_rechazados[canto_actual] - 1} puntos.")
+                print(f"Sumás {valores_rechazados[canto_actual]} puntos.")
                 envido_terminado = True
 
     return puntos_jugador, puntos_maquina, envido_terminado

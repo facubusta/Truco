@@ -1,3 +1,5 @@
+import pygame
+
 def Calcular_envido(mano: list) -> int:
     """
     Calcula los puntos de Envido en la mano de un jugador según las reglas del Truco.
@@ -140,3 +142,38 @@ def turno_maquina_canto(canto_actual: str, turno: str, puntos_canto: dict, punto
         # La máquina acepta
         print(f"La máquina aceptó el {canto_actual}.")
         return "jugador", canto_actual, True
+    
+def mostrar_resultado_final(pantalla: pygame.Surface, fondo: pygame.Surface, imagen: str, mensaje: str, color: tuple) -> None:
+    """
+    Muestra la pantalla final con el resultado del juego (ganaste/perdiste).
+    
+    Parámetros:
+        pantalla (pygame.Surface): La superficie donde se dibuja todo.
+        fondo (pygame.Surface): Imagen de fondo.
+        imagen (str): Ruta de la imagen a mostrar.
+        mensaje (str): Mensaje a mostrar (Ganaste/Perdiste).
+        color (tuple): Color del texto del mensaje.
+    """
+    # Cargar la imagen
+    imagen_final = pygame.image.load(imagen)
+    imagen_final = pygame.transform.scale(imagen_final, (300, 300))  # Escalar la imagen al tamaño deseado
+
+    # Bucle para mostrar el resultado
+    mostrando_resultado = True
+    while mostrando_resultado:
+        for evento in pygame.event.get():
+            if evento.type == pygame.QUIT:
+                pygame.quit()
+                exit()
+            if evento.type == pygame.KEYDOWN and evento.key == pygame.K_RETURN:  # Salir con Enter
+                mostrando_resultado = False
+
+        pantalla.blit(fondo, (0, 0))  # Mostrar el fondo
+        pantalla.blit(imagen_final, (259, 194))  # Mostrar la imagen al centro
+
+        # Mostrar el mensaje
+        fuente = pygame.font.Font(None, 50)
+        texto = fuente.render(mensaje, True, color)
+        pantalla.blit(texto, (300 // 2 - texto.get_width() // 2, 450))
+
+        pygame.display.flip()
